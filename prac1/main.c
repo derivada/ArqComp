@@ -20,6 +20,7 @@
 void start_counter();
 double get_counter();
 double mhz();
+
 static unsigned cyc_hi = 0;
 static unsigned cyc_lo = 0;
 
@@ -30,6 +31,7 @@ static unsigned cyc_lo = 0;
 #include <time.h>
 #include <pmmintrin.h>
 #include <ctype.h>
+#include <wait.h>
 
 // Constantes del experimento
 #define S1 512  // Total líneas cache en la L1
@@ -47,11 +49,6 @@ int main(int argc, char **argv)
     }
     else
     {
-        if ((!isdigit(argv[1])) || (!isdigit(argv[2])))
-        {
-            printf("Los argumentos no son números enteros\n");
-            exit(EXIT_FAILURE);
-        }
         D = atoi(argv[1]);
         R = atoi(argv[2]);
         if (D <= 0 || R <= 0)
@@ -97,11 +94,17 @@ int main(int argc, char **argv)
     // Obtenemos los resultados temporales
     ck = get_counter();
     ck_medio = (double)(ck / accesos);
+    
+    // Imprimimos datos y resultados
+    printf("Número de elementos consultados: R = %d\n", R);
+    printf("Salto entre elementos consultados: D = %d (%d bytes)\n", D, (D*sizeof(double)));
+    printf("Tamaño de línea: CLS = %d\n", CLS);
+    printf("Número de líneas en caché nivel 1: S1 = %d\n", S1);
+    printf("Número de líneas en caché nivel 2: S2 = %d\n", S2);
+    mhz(1, 1);
+
     printf("\nCiclos de ejecución totales = %1.10lf\n", ck);
     printf("Tiempo medio de acceso = %1.10lf ciclos\n", ck_medio);
-
-    // Imprimimos la frecuencia de reloj
-    mhz(1, 1);
 
     // Imprimimos el vector S
     printf("\nVector de resultados:\n");
@@ -166,6 +169,6 @@ double mhz(int verbose, int sleeptime)
     sleep(sleeptime);
     rate = get_counter() / (1e6 * sleeptime);
     if (verbose)
-        printf("\n Processor clock rate = %.1f MHz\n", rate);
+        printf("\nProcessor clock rate = %.1f MHz\n", rate);
     return rate;
 }

@@ -1,0 +1,22 @@
+Número de elementos consultados: R = 16384
+Salto entre elementos consultados: D = 8 (64 bytes)
+Tamaño de línea: CLS = 64
+Número de líneas en caché nivel 1: S1 = 512
+Número de líneas en caché nivel 2: S2 = 4096
+
+Processor clock rate = 2304.4 MHz
+
+Ciclos de ejecución totales = 4495316.0000000000
+Tiempo medio de acceso = 27.4372314453 ciclos
+
+Vector de resultados:
+S[0]: -24567.101452
+S[1]: -24567.101452
+S[2]: -24567.101452
+S[3]: -24567.101452
+S[4]: -24567.101452
+S[5]: -24567.101452
+S[6]: -24567.101452
+S[7]: -24567.101452
+S[8]: -24567.101452
+S[9]: -24567.101452
