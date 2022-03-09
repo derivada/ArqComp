@@ -11,7 +11,7 @@ CLS=64  # Tamaño de la línea caché en bytes
 valoresD=(2 8 16 64 100) # 5 Valores de D elegidos entre 1 y 100
 
 # Compilar el programa con las flags necesarias
-gcc -o main main.c -O0 -msse3 -Wall -pedantic 2> compl_errors.txt
+gcc -o main main.c -O0 -msse3 -Wall -lm -pedantic 2> compl_errors.txt
 
 # Crear el directorio de logs para las salidas del programa o limpiarlo 
 if ! test -d "./logs"
@@ -23,20 +23,21 @@ fi
 # Ejecuta el programa para todos las combinaciones de D y R y lo guarda el archivo logs/log_D_R
 for D in "${valoresD[@]}";
 do
-    R=$(echo "0.5*$S1" | bc)
-    ./main $D $R > logs/log_${D}_${R}
-    R=$(echo "1.5*$S1" | bc)
-    ./main $D $R > logs/log_${D}_${R}
-    R=$(echo "0.5*$S2" | bc)
-    ./main $D $R > logs/log_${D}_${R}
-    R=$(echo "0.75*$S2" | bc)
-    ./main $D $R > logs/log_${D}_${R}
-    R=$(echo "2*$S2" | bc)
-    ./main $D $R > logs/log_${D}_${R}
-    R=$(echo "4*$S2" | bc)
-    ./main $D $R > logs/log_${D}_${R}
-    R=$(echo "8*$S2" | bc)
-    ./main $D $R > logs/log_${D}_${R}
+    echo "Haciendo tests para D = $D"
+    L=$(echo "0.5*$S1" | bc)
+    ./main $D $L > logs/log_${D}_${L}
+    L=$(echo "1.5*$S1" | bc)
+    ./main $D $L > logs/log_${D}_${L}
+    L=$(echo "0.5*$S2" | bc)
+    ./main $D $L > logs/log_${D}_${L}
+    L=$(echo "0.75*$S2" | bc)
+    ./main $D $L > logs/log_${D}_${L}
+    L=$(echo "2*$S2" | bc)
+    ./main $D $L > logs/log_${D}_${L}
+    L=$(echo "4*$S2" | bc)
+    ./main $D $L > logs/log_${D}_${L}
+    L=$(echo "8*$S2" | bc)
+    ./main $D $L > logs/log_${D}_${L}
 done
 
 # Limpiamos y acabamos

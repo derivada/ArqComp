@@ -32,30 +32,36 @@ static unsigned cyc_lo = 0;
 #include <pmmintrin.h>
 #include <ctype.h>
 #include <wait.h>
+#include <unistd.h>
+#include <math.h>
 
 // Constantes del experimento
 #define S1 512  // Total líneas cache en la L1
 #define S2 4096 // Total líneas cache en la L2
 #define CLS 64  // Tamaño de la línea caché en bytes
 
-int D, R;
+int D, R, L; // Parametros
 
 int main(int argc, char **argv)
 {
     if (argc < 3)
     {
-        printf("Por favor pase argumentos D y R\n");
+        printf("Por favor pase argumentos D (salto) y L (lineas usadas)\n");
         exit(EXIT_FAILURE);
     }
     else
     {
+        // D: Salto entre elementos
         D = atoi(argv[1]);
-        R = atoi(argv[2]);
-        if (D <= 0 || R <= 0)
+        // L: Número de lineas cache a usar
+        L = atoi(argv[2]);
+        // Hallar R: numero de elem a sumar
+        if (D <= 0 || L <= 0)
         {
             printf("Argumentos incorrectos\n");
             exit(EXIT_FAILURE);
         }
+        R = (int) ceil((double)(L * CLS) / (double)(D * sizeof(double)));
     }
 
     double *A, S[10];
@@ -96,25 +102,28 @@ int main(int argc, char **argv)
     ck_medio = (double)(ck / accesos);
     
     // Imprimimos datos y resultados
-    printf("Número de elementos consultados: R = %d\n", R);
-    printf("Salto entre elementos consultados: D = %d (%d bytes)\n", D, (D*sizeof(double)));
-    printf("Tamaño de línea: CLS = %d\n", CLS);
-    printf("Número de líneas en caché nivel 1: S1 = %d\n", S1);
-    printf("Número de líneas en caché nivel 2: S2 = %d\n", S2);
-    mhz(1, 1);
-
-    printf("\nCiclos de ejecución totales = %1.10lf\n", ck);
-    printf("Tiempo medio de acceso = %1.10lf ciclos\n", ck_medio);
+    printf("Argumentos del test:\n");
+    printf("\tNúmero de elementos consultados: R = %d\n", R);
+    printf("\tSalto entre elementos consultados: D = %d (%ld bytes)\n", D, (D*sizeof(double)));
+    printf("\tNúmero de líneas accedidas: D = %d (%ld bytes)\n", D, (D*sizeof(double)));
+    printf("\nPropiedades del ordenador:\n");
+    printf("\tTamaño de línea: CLS = %d\n", CLS);
+    printf("\tNúmero de líneas en caché nivel 1: S1 = %d\n", S1);
+    printf("\tNúmero de líneas en caché nivel 2: S2 = %d\n", S2);
+    printf("\nTiempos y ciclos:\n");
+    printf("\tCiclos de ejecución totales = %1.10lf\n", ck);
+    printf("\tTiempo medio de acceso = %1.10lf ciclos\n", ck_medio);
 
     // Imprimimos el vector S
     printf("\nVector de resultados:\n");
     for (int i = 0; i < 10; i++)
     {
-        printf("S[%d]: %lf\n", i, S[i]);
+        printf("\tS[%d]: %lf\n", i, S[i]);
     }
-
+    
     _mm_free(A);
 
+    printf("\nMemoria liberada y programa terminado con éxito!\n");
     return EXIT_SUCCESS;
 }
 
@@ -159,16 +168,4 @@ double get_counter()
         fprintf(stderr, "Error: counter returns neg value: %.0f\n", result);
     }
     return result;
-}
-
-double mhz(int verbose, int sleeptime)
-{
-    double rate;
-
-    start_counter();
-    sleep(sleeptime);
-    rate = get_counter() / (1e6 * sleeptime);
-    if (verbose)
-        printf("\nProcessor clock rate = %.1f MHz\n", rate);
-    return rate;
 }
