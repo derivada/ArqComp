@@ -35,18 +35,17 @@ static unsigned cyc_lo = 0;
 #include <unistd.h>
 #include <math.h>
 
-// Constantes del experimento
-#define S1 512  // Total líneas cache en la L1
-#define S2 4096 // Total líneas cache en la L2
-#define CLS 64  // Tamaño de la línea caché en bytes
+// Constantes del CPU
+int CLS, S1, S2;
 
-int D, R, L; // Parametros
+// Parametros del test
+int D, L, R; 
 
 int main(int argc, char **argv)
 {
-    if (argc < 3)
+    if (argc < 6)
     {
-        printf("Por favor pase argumentos D (salto) y L (lineas usadas)\n");
+        printf("Uso correcto ./main D L CLS S1 S2");
         exit(EXIT_FAILURE);
     }
     else
@@ -55,12 +54,20 @@ int main(int argc, char **argv)
         D = atoi(argv[1]);
         // L: Número de lineas cache a usar
         L = atoi(argv[2]);
+        // CLS: Tamaño de línea en bytes
+        CLS = atoi(argv[3]);
+        // S1: Número de líneas en la L1
+        S1 = atoi(argv[4]);
+        // S2: Número de líneas en la L2
+        S2 = atoi(argv[5]);
         // Hallar R: numero de elem a sumar
-        if (D <= 0 || L <= 0)
+        if (D <= 0 || L <= 0 || CLS <= 0 || S1 <= 0 || S2 <= 0)
         {
-            printf("Argumentos incorrectos\n");
+            printf("Alguno de los argumentos es incorrecto\n");
             exit(EXIT_FAILURE);
         }
+
+        // Calcular R usando la formula
         R = (int) ceil((double)(L * CLS) / (double)(D * sizeof(double)));
     }
 
