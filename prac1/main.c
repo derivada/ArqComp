@@ -112,7 +112,7 @@ int main(int argc, char **argv)
     printf("Argumentos del test:\n");
     printf("\tNúmero de elementos consultados: R = %d\n", R);
     printf("\tSalto entre elementos consultados: D = %d (%ld bytes)\n", D, (D*sizeof(double)));
-    printf("\tNúmero de líneas accedidas: D = %d (%ld bytes)\n", D, (D*sizeof(double)));
+    printf("\tNúmero de líneas accedidas: L = %d\n", L);
     printf("\nPropiedades del ordenador:\n");
     printf("\tTamaño de línea: CLS = %d\n", CLS);
     printf("\tNúmero de líneas en caché nivel 1: S1 = %d\n", S1);
