@@ -1,0 +1,8 @@
+TamañoL1 = 128 UnidadL1 = KiB
+L1 size (bytes)=131072 bytes
+TamañoL2 = 1 UnidadL2 = MiB
+L2 size (bytes)=1048576 bytes
+nCores = 4
+CLS = 64
+S1 = 512
+S2 = 4096

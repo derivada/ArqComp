@@ -39,13 +39,16 @@ static unsigned cyc_lo = 0;
 int CLS, S1, S2;
 
 // Parametros del test
-int D, L, R; 
+int D, L, R;
+
+// Archivo de salida (csv)
+FILE *resultsFile;
 
 int main(int argc, char **argv)
 {
-    if (argc < 6)
+    if (argc < 7)
     {
-        printf("Uso correcto ./main D L CLS S1 S2");
+        printf("Uso correcto ./main D L CLS S1 S2 resultsFile");
         exit(EXIT_FAILURE);
     }
     else
@@ -63,12 +66,18 @@ int main(int argc, char **argv)
         // Hallar R: numero de elem a sumar
         if (D <= 0 || L <= 0 || CLS <= 0 || S1 <= 0 || S2 <= 0)
         {
-            printf("Alguno de los argumentos es incorrecto\n");
+            printf("Alguno de los argumentos numéricos es incorrecto\n");
+            exit(EXIT_FAILURE);
+        }
+        resultsFile = fopen(argv[6], "a");
+        if (resultsFile == NULL)
+        {
+            printf("El archivo de resultados \"%s\" no existe!\n", argv[6]);
             exit(EXIT_FAILURE);
         }
 
         // Calcular R usando la formula
-        R = (int) ceil((double)(L * CLS) / (double)(D * sizeof(double)));
+        R = (int)ceil((double)(L * CLS) / (double)(D * sizeof(double)));
     }
 
     double *A, S[10];
@@ -109,9 +118,14 @@ int main(int argc, char **argv)
     ck_medio = (double)(ck / accesos);
     
     // Imprimimos datos y resultados
+
+    // Formato de linea: D, R, L, ck, ck_medio
+    fprintf(resultsFile, "%d,%d,%d,%d,%lf\n", D, R, L, (int) ck, ck_medio);
+    printf("Resultados impresos al fichero de resultados con éxito");
+    printf("DEBUG INFO:\n");
     printf("Argumentos del test:\n");
     printf("\tNúmero de elementos consultados: R = %d\n", R);
-    printf("\tSalto entre elementos consultados: D = %d (%ld bytes)\n", D, (D*sizeof(double)));
+    printf("\tSalto entre elementos consultados: D = %d (%ld bytes)\n", D, (D * sizeof(double)));
     printf("\tNúmero de líneas accedidas: L = %d\n", L);
     printf("\nPropiedades del ordenador:\n");
     printf("\tTamaño de línea: CLS = %d\n", CLS);
@@ -127,7 +141,7 @@ int main(int argc, char **argv)
     {
         printf("\tS[%d]: %lf\n", i, S[i]);
     }
-    
+
     _mm_free(A);
 
     printf("\nMemoria liberada y programa terminado con éxito!\n");

@@ -73,24 +73,34 @@ then
 else
     rm ./logs/log*
 fi
+
+# Poner a punto el fichero de salida de resultados
+RESULTS_FILE="results.csv"
+if test -e $RESULTS_FILE
+then
+    rm $RESULTS_FILE
+fi
+
+echo "D,R,L,ck,ck_medio" > $RESULTS_FILE
+
 # Ejecuta el programa para todos las combinaciones de D y R y lo guarda el archivo logs/log_D_R
 for D in "${valoresD[@]}";
 do
     echo "Haciendo tests para D = $D"
     L=$(echo "0.5*$S1" | bc)
-    ./main $D $L $CLS $S1 $S2 > "logs/log_${D}_${L}.txt"
+    ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
     L=$(echo "1.5*$S1" | bc)
-    ./main $D $L $CLS $S1 $S2 > "logs/log_${D}_${L}.txt"
+    ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
     L=$(echo "0.5*$S2" | bc)
-    ./main $D $L $CLS $S1 $S2 > "logs/log_${D}_${L}.txt"
+    ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
     L=$(echo "0.75*$S2" | bc)
-    ./main $D $L $CLS $S1 $S2 > "logs/log_${D}_${L}.txt"
+    ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
     L=$(echo "2*$S2" | bc)
-    ./main $D $L $CLS $S1 $S2 > "logs/log_${D}_${L}.txt"
+    ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
     L=$(echo "4*$S2" | bc)
-    ./main $D $L $CLS $S1 $S2 > "logs/log_${D}_${L}.txt"
+    ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
     L=$(echo "8*$S2" | bc)
-    ./main $D $L $CLS $S1 $S2 > "logs/log_${D}_${L}.txt"
+    ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
 done
 
 # Limpiamos y acabamos
