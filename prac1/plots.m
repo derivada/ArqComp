@@ -1,3 +1,4 @@
+1  #!/usr/bin/env octave -q
 ds = importdata ("results.csv", delimiterIn=",", headerLinesIn=1);
 
 colors = ["r", "b", "g", "m", "k"];
