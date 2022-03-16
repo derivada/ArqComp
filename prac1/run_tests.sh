@@ -61,7 +61,7 @@ info_cache
 # Tomar  medidas  de  ciclos  para  los  siguientes  valores  de  
 # L:  0.5*S1,  1.5*S1,  0.5*S2,  0.75*S2,  2*S2, 4*S2,  8*S2,  
 # siendo  S1  el  número  de  líneas  caché  que  caben en  la  caché L1  de  datos  y  S2  el  número  de  líneas  caché que caben en la caché L2.
-valoresD=(1 2 4 37 100) # 5 Valores de D elegidos entre 1 y 100
+valoresD=(2 5 8 16 69) # 5 Valores de D elegidos entre 1 y 100
 
 # Compilar el programa con las flags necesarias
 gcc -o main main.c -O0 -msse3 -Wall -lm -pedantic 2> compl_errors.txt
@@ -75,35 +75,49 @@ else
 fi
 
 # Poner a punto el fichero de salida de resultados
-RESULTS_FILE="results.csv"
-if test -e $RESULTS_FILE
-then
-    rm $RESULTS_FILE
-fi
 
-echo "D,R,L,ck,ck_medio" > $RESULTS_FILE
+
 
 # Ejecuta el programa para todos las combinaciones de D y R y lo guarda el archivo logs/log_D_R
-for D in "${valoresD[@]}";
+for i in {1..10}
 do
-    echo "Haciendo tests para D = $D"
-    L=$(echo "0.5*$S1" | bc)
-    ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
-    L=$(echo "1.5*$S1" | bc)
-    ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
-    L=$(echo "0.5*$S2" | bc)
-    ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
-    L=$(echo "0.75*$S2" | bc)
-    ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
-    L=$(echo "2*$S2" | bc)
-    ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
-    L=$(echo "4*$S2" | bc)
-    ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
-    L=$(echo "8*$S2" | bc)
-    ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
+    RESULTS_FILE="results${i}.csv"
+    if test -e $RESULTS_FILE
+    then
+        rm $RESULTS_FILE
+    fi
+    echo "D,R,L,ck,ck_medio" > $RESULTS_FILE
+    for D in "${valoresD[@]}";
+    do
+        echo "Haciendo tests para D = $D, i = $i"
+        L=$(echo "0.5*$S1" | bc)
+        ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
+        L=$(echo "1.5*$S1" | bc)
+        ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
+        L=$(echo "0.5*$S2" | bc)
+        ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
+        L=$(echo "0.75*$S2" | bc)
+        ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
+        L=$(echo "2*$S2" | bc)
+        ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
+        L=$(echo "4*$S2" | bc)
+        ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
+        L=$(echo "8*$S2" | bc)
+        ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
+    done
 done
 
-# Limpiamos y acabamos
+# Combinar resultados
+gcc -o mediana mediana.c -Wall -pedantic 2> compl_errors.txt
+
+./mediana
+
+# Limpiamos ejecutables
 rm main
+rm mediana
+
+# Graficas
+octave plots.m
+
 echo "Done!"
 exit 0

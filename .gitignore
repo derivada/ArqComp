@@ -1,3 +1,6 @@
 .history/
 *.vsix
 prac1/logs
+prac1/*.csv
+prac1/*.jpg
+prac1/*.txt

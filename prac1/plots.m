@@ -3,7 +3,6 @@ ds = importdata ("results.csv", delimiterIn=",", headerLinesIn=1);
 colors = ["r", "b", "g", "m", "k"];
 
 l = [];
-
 array_plots = [];
 
 for i = 1:5
@@ -13,9 +12,9 @@ for i = 1:5
     if (i == 1); hold on; endif;
 endfor
 
-title("Plot");
+title("Resultados de las ejecuciones");
 
-legend(array_plots, cellstr(num2str(l', 'N=%-d')));
+legend(array_plots, cellstr(num2str(l', 'D=%-d')));
 xlabel("L");
 ylabel("ck medio");
-print -djpg graphs.jpg;
+print -djpg graphD-L.jpg;
