@@ -61,7 +61,7 @@ info_cache
 # Tomar  medidas  de  ciclos  para  los  siguientes  valores  de  
 # L:  0.5*S1,  1.5*S1,  0.5*S2,  0.75*S2,  2*S2, 4*S2,  8*S2,  
 # siendo  S1  el  número  de  líneas  caché  que  caben en  la  caché L1  de  datos  y  S2  el  número  de  líneas  caché que caben en la caché L2.
-valoresD=(2 5 8 16 69) # 5 Valores de D elegidos entre 1 y 100
+valoresD=(1 5 10 50 95) # 5 Valores de D elegidos entre 1 y 100
 
 # Compilar el programa con las flags necesarias
 gcc -o main main.c -O0 -msse3 -Wall -lm -pedantic 2> compl_errors.txt
@@ -117,7 +117,7 @@ rm main
 rm mediana
 
 # Graficas
-octave plots.m
+# octave plots.m
 
 echo "Done!"
 exit 0

@@ -16,7 +16,7 @@ plotD = ggplot(data = datos, mapping = aes(x = D, y = ck_medio)) +
        y = "Ciclos de reloj por acceso",
        fill = "L") +
   theme_bw()
-ggsave("grafica_agrup_L.png", plotL, width = 15, height = 10)
+ggsave("grafica_agrup_D.png", plotD, width = 15, height = 10)
 
 # Grafica L agrupado por D
 plotL = ggplot(data = datos, mapping = aes(x = L, y = ck_medio)) +
@@ -26,7 +26,7 @@ plotL = ggplot(data = datos, mapping = aes(x = L, y = ck_medio)) +
        y = "Ciclos de reloj por acceso",
        fill = "D") +
   theme_bw()
-ggsave("grafica_agrup_D.png", plotL, width = 15, height = 10)
+ggsave("grafica_agrup_L.png", plotL, width = 15, height = 10)
 
 # Refrescar datos
 datos = read.table("results.csv", header = TRUE, sep = ",")
