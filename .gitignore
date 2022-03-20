@@ -3,4 +3,8 @@
 prac1/logs
 prac1/*.csv
 prac1/*.jpg
+prac1/*.png
 prac1/*.txt
+prac1/*.html
+prac1/.RData
+prac1/.Rhistory

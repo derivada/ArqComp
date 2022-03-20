@@ -10,7 +10,7 @@ l = [];
 array_plots = [];
 
 for i = 1:num_D
-    indexes = ((i-1)*7)+1:i*7;
+    indexes = 1 + ((i-1)*num_L) : i*7;
     array_plots(i) = plot(ds.data(indexes, 3), ds.data(indexes, 5), "color", colors(i));
     l = [l ds.data(indexes(1), 1)];
     if (i == 1); hold on; endif;
@@ -29,7 +29,7 @@ l = [];
 array_plots = [];
 
 for i = 1:num_L
-    indexes = (((i-1)*num_D) + 1: i*num_D);
+    indexes = i : num_L : 35;
     array_plots(i) = plot(ds.data(indexes, 1), ds.data(indexes, 5), "color", colors(i));
     l = [l ds.data(indexes(1), 3)];
     if (i == 1); hold on; endif;
