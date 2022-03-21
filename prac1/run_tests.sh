@@ -1,5 +1,5 @@
 
-# Obtener info de la cache
+# Función para obtener info de la cache
 info_cache() {
     CACHE_LOG_FILE="cache_info.txt"
     if ! test -f $CACHE_LOG_FILE
@@ -51,7 +51,7 @@ info_cache() {
 
     # Cantidad de lineas S1 y S2
     S1=$(( $tamanoL1 / ( $CLS * $nCores ) ))
-    echo "S1 = $S1" >> $CACHE_LOG_FILE
+    echo "S1 = $512S1" >> $CACHE_LOG_FILE
     S2=$(( $tamanoL2 / ( $CLS * $nCores ) ))
     echo "S2 = $S2" >> $CACHE_LOG_FILE
 }
@@ -61,10 +61,15 @@ info_cache
 # Tomar  medidas  de  ciclos  para  los  siguientes  valores  de  
 # L:  0.5*S1,  1.5*S1,  0.5*S2,  0.75*S2,  2*S2, 4*S2,  8*S2,  
 # siendo  S1  el  número  de  líneas  caché  que  caben en  la  caché L1  de  datos  y  S2  el  número  de  líneas  caché que caben en la caché L2.
-valoresD=(1 5 10 50 95) # 5 Valores de D elegidos entre 1 y 100
+valoresD=(1 4 8 17 99) # 5 Valores de D elegidos entre 1 y 100
 
 # Compilar el programa con las flags necesarias
 gcc -o main main.c -O0 -msse3 -Wall -lm -pedantic 2> compl_errors.txt
+if [[ $? != 0 ]]; then
+  echo "El programa principal no se pudo compilar!"
+  exit 1
+fi
+rm compl_errors.txt # Si llegamos aquí es que no hubo errores de compilación
 
 # Crear el directorio de logs para las salidas del programa o limpiarlo 
 if ! test -d "./logs"
@@ -74,11 +79,9 @@ else
     rm ./logs/log*
 fi
 
-# Poner a punto el fichero de salida de resultados
-
-
-
-# Ejecuta el programa para todos las combinaciones de D y R y lo guarda el archivo logs/log_D_R
+# Ejecuta el programa 10 veces para todos las combinaciones de D y R.
+# Los logs con informácion detallada se guardan en logs/log_D_R.txt
+# Los resultados de cada ejecución (para cada i) se guardan en resultsi.csv
 for i in {1..10}
 do
     RESULTS_FILE="results${i}.csv"
@@ -110,14 +113,14 @@ done
 # Combinar resultados
 gcc -o mediana mediana.c -Wall -pedantic 2> compl_errors.txt
 
+# Calculamos la mediana de los resultados y obtenemos los resultados definitivos en results.csv
 ./mediana
+rm results{1..10}.csv # Borramos resultados parciales
 
 # Limpiamos ejecutables
 rm main
 rm mediana
 
-# Graficas
-# octave plots.m
-
+# Finalizamos
 echo "Done!"
 exit 0

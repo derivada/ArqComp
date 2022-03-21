@@ -64,33 +64,42 @@ int main(int argc, char **argv)
         // S2: Número de líneas en la L2
         S2 = atoi(argv[5]);
         // Hallar R: numero de elem a sumar
-        if (D <= 0 || L <= 0 || CLS <= 0 || S1 <= 0 || S2 <= 0)
+        if (D <= 0 || L <= 0 || CLS <= 0 || S1 <= 0 || S2 <= 0) // Comprobamos que los valores de entrada son válidos
         {
             printf("Alguno de los argumentos numéricos es incorrecto\n");
             exit(EXIT_FAILURE);
         }
-        resultsFile = fopen(argv[6], "a");
-        if (resultsFile == NULL)
-        {
-            printf("El archivo de resultados \"%s\" no existe!\n", argv[6]);
-            exit(EXIT_FAILURE);
-        }
 
-        // Calcular R usando la formula
-        R = (int)ceil((double)(L * CLS) / (double)(D * sizeof(double)));
+        /*
+         * Cálculo del número de elementos en un array
+         * Si D es mayor que el número de doubles que caben en una línea caché, entonces cada elemento se consultará
+         * en una nueva línea, así que el número de líneas visitadas será igual que el número de elementos a los que accedemos
+         *
+         * En caso de que el valor de D sea menor, entonces realizamos un cálculo para tener en cuenta que habrá elementos
+         * que se consultan de una misma línea
+         */
+        if (D > (CLS / sizeof(double)))
+            R = L;
+        else
+            R = (int)ceil((double)(L * CLS) / (double)(D * sizeof(double)));
     }
 
-    double *A, S[10];
+    double *A, S[10], S_medio;
     int ind[R];
     double ck, ck_medio;
     int accesos = 10 * R;
 
-    // Reserva de memoria para el vector A
+    /*
+     * Reserva de memoria para el vector A
+     * El espacio reservado es igual al número de elementos consultados por el espacio que necesita cada uno,
+     * esto es, el tamaño de un double por D, el número de doubles que ocupa cada uno.
+     * Alineamos esta reserva de memoria con el CLS (tamaño de línea) para asegurarnos de que consultamos el
+     * número de líneas deseado.
+     */
     A = (double *)_mm_malloc(R * D * sizeof(double), CLS);
 
     // Inicializamos el vector ind y los números aleatorios de A
     srand(time(NULL));
-
     for (int i = 0; i < R; i++)
     {
         ind[i] = i * D;
@@ -101,9 +110,10 @@ int main(int argc, char **argv)
         }
     }
 
+    // Empezamos a contar el tiempo
     start_counter();
 
-    // Repetimos la reducción 10 veces
+    // Repetimos la reducción del vector 10 veces
     for (int i = 0; i < 10; i++)
     {
         S[i] = 0;
@@ -113,14 +123,30 @@ int main(int argc, char **argv)
         }
     }
 
+    // Cálculo del valor medio de las S, para evitar que el compilador no optimize agresivamente y acabe sin calcular los resultados S[i]
+    for (int i = 0; i < 10; i++)
+    {
+        S_medio += S[i];
+    }
+    S_medio /= 10;
+
     // Obtenemos los resultados temporales
     ck = get_counter();
     ck_medio = (double)(ck / accesos);
-    
+
     // Imprimimos datos y resultados
 
+    // Abrimos el archivo de resultados para meter la línea correspondiente a esta ejecución
+    resultsFile = fopen(argv[6], "a");
+    if (resultsFile == NULL)
+    {
+        printf("El archivo de resultados \"%s\" no existe!\n", argv[6]);
+        exit(EXIT_FAILURE);
+    }
     // Formato de linea: D, R, L, ck, ck_medio
-    fprintf(resultsFile, "%d,%d,%d,%d,%lf\n", D, R, L, (int) ck, ck_medio);
+    fprintf(resultsFile, "%d,%d,%d,%d,%lf\n", D, R, L, (int)ck, ck_medio);
+
+    // También imprimimos por consola (o redirigimos con un pipe) información más detallada acerca de esta
     printf("Resultados impresos al fichero de resultados con éxito");
     printf("DEBUG INFO:\n");
     printf("Argumentos del test:\n");
@@ -135,15 +161,16 @@ int main(int argc, char **argv)
     printf("\tCiclos de ejecución totales = %1.10lf\n", ck);
     printf("\tTiempo medio de acceso = %1.10lf ciclos\n", ck_medio);
 
-    // Imprimimos el vector S
+    // Imprimimos el vector S y el S_medio
     printf("\nVector de resultados:\n");
     for (int i = 0; i < 10; i++)
     {
         printf("\tS[%d]: %lf\n", i, S[i]);
     }
+    printf("S medio = %lf\n", S_medio);
 
+    // Liberamos la memoria asignada y acabamos
     _mm_free(A);
-
     printf("\nMemoria liberada y programa terminado con éxito!\n");
     return EXIT_SUCCESS;
 }

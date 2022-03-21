@@ -1,0 +1,530 @@
+\documentclass[a4paper,twocolumn]{article}
+
+\usepackage[sc]{mathpazo} % Use the Palatino font
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\usepackage[utf8]{inputenc} % Use utf-8 as encoding
+\linespread{1.05} % Line spacing - Palatino needs more space between lines
+\usepackage{microtype} % Slightly tweak font spacing for aesthetics
+
+\usepackage[spanish]{babel} % Language hyphenation and typographical rules
+%\usepackage[galician]{babel} % Change to this if using galician
+
+\usepackage[hmarginratio=1:1,top=32mm,columnsep=20pt]{geometry} % Document margins
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
+\usepackage{booktabs} % Horizontal rules in tables
+
+\usepackage{enumitem} % Customized lists
+\setlist[itemize]{noitemsep} % Make itemize lists more compact
+
+\usepackage{abstract} % Allows abstract customization
+\renewcommand{\abstractnamefont}{\normalfont\bfseries} % Set the "Abstract" text to bold
+\renewcommand{\abstracttextfont}{\normalfont\small\itshape} % Set the abstract itself to small italic text
+
+\usepackage{titlesec} % Allows customization of titles
+\renewcommand\thesection{\Roman{section}} % Roman numerals for the sections
+\renewcommand\thesubsection{\Alph{subsection}} % roman numerals for subsections
+\titleformat{\section}[block]{\large\scshape\centering}{\thesection.}{1em}{} % Change the look of the section titles
+\titleformat{\subsection}[block]{\large}{\thesubsection.}{1em}{} % Change the look of the section titles
+
+\usepackage{fancyhdr} % Headers and footers
+\pagestyle{fancy} % All pages have headers and footers
+\fancyhead{} % Blank out the default header
+\fancyfoot{} % Blank out the default footer
+%\fancyhead[C]{Running title $\bullet$ May 2016 $\bullet$ Vol. XXI, No. 1} % Custom header text
+\fancyfoot[C]{\thepage} % Custom footer text
+
+\usepackage{titling} % Customizing the title section
+
+\usepackage{hyperref} % For hyperlinks in the PDF
+
+% PAQUETES PROPIOS QUE NO SON DE LA PLANTILLAS
+\usepackage{listings} % Para insertar código
+\usepackage{multicol}
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\lstset{
+  language=C,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\setlength{\droptitle}{-4\baselineskip} % Move the title up
+
+\pretitle{\begin{center}\huge\bfseries} % Article title formatting
+	\posttitle{\end{center}} % Article title closing formatting
+
+\title{Informe Práctica 1} % Article title
+\author{%
+	\textsc{Pablo Landrove Pérez-Gorgoroso, Pablo Díaz Viñambres} \\[1ex] % Your name
+	\normalsize Arquitectura de Computadores\\
+	% \normalsize Grupo XX \\ % Your institution
+	\normalsize \{pablo.landrove, pablo.diaz.vinambres\}@rai.usc.es % Your email address
+	%\and % Uncomment if 2 authors are required, duplicate these 4 lines if more
+	%\textsc{Jane Smith}\thanks{Corresponding author} \\[1ex] % Second author's name
+	%\normalsize University of Utah \\ % Second author's institution
+	%\normalsize \href{mailto:jane@smith.com}{jane@smith.com} % Second author's email address
+}
+\date{\today} % Leave empty to omit a date
+\renewcommand{\maketitlehookd}{%
+	\begin{abstract}
+		\noindent En este informe resumiremos los resultados obtenidos durante la práctica 1 de Arquitectura de Computadores. En general, daremos una comparación de rendimiento de un programa de reducción en el que se han alojado los datos en diferentes posiciones de memoria. Demostraremos así como una buena localidad en el uso de la caché puede aumentar el rendimiento de un programa \\\mbox{}\\
+		 \textbf{\textit{Palabras clave}: Memoria caché, localidad espacial, rendimiento de programas\ldots}
+	\end{abstract}
+}
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+	
+	% Print the title
+	\maketitle
+	
+	%----------------------------------------------------------------------------------------
+	%	ARTICLE CONTENTS
+	%----------------------------------------------------------------------------------------
+	
+	\section{Introducción}
+	
+	En esta práctica el objetivo es mejorar el rendimiento de un programa sencillo escrito en C optimizando el acceso y la forma de los accesos a la caché del procesador.	Cada procesador cuenta con varios niveles de memoria caché de acceso rápido pero baja capacidad, esto permite que el número medio de ciclos por acceso a memoria sea mucho menor que si accedemos a la memoria principal en cada consulta. Reducir el número de líneas usadas y el orden de acceso a ellas nos dará un aumento de rendimiento notable en cualquier programa. \\
+	
+	Demostraremos que al reducir la localidad de los datos consultados, aumenta el número medio de ciclos por acceso a dato. Al variar L y D cambiaremos el número de líneas consultadas y el espacio de memoria entre cada dato, aumentando estos valores. \\
+	
+	En las siguientes secciones, explicaremos más detallamente en qué consiste el programa y la metodología de las pruebas, daremos las características del ordenador utilizado y presentaremos los resultados en forma de gráficas comentadas. Por último, deduciremos qué factores afectaron consistentemente al rendimiento del programa. \\
+	
+	%------------------------------------------------
+	\section{Descripción del problema}
+	% Aquí meter código del problema, explicación de como funciona
+	El código a optimizar consiste en un programa en C, compilado sin optimizaciones del compilador \texttt{gcc}. Este programa realiza una operación de reducción de suma en el array \texttt{A}, de \texttt{R} elementos de tipo \texttt{double} separados entre ellos por \texttt{D} elementos vacíos. Esta operación se realiza 10 veces y después se calcula el valor medio de la suma. El programa principal en el que esto fue implementado es \textbf{main.c}, insertado a continuación con comentarios que ayudan a entender que hace cada parte específica:
+	
+	\newpage
+	\onecolumn
+	\large{Código del programa \texttt{main.c}:}
+	\begin{lstlisting}
+    void start_counter();
+        double get_counter();
+        double mhz();
+        
+        static unsigned cyc_hi = 0;
+        static unsigned cyc_lo = 0;
+        
+        #include <stdlib.h>
+        #include <stdio.h>
+        #include <time.h>
+        #include <pmmintrin.h>
+        #include <ctype.h>
+        #include <wait.h>
+        #include <unistd.h>
+        #include <math.h>
+        
+        // Constantes del CPU
+        int CLS, S1, S2;
+        
+        // Parametros del test
+        int D, L, R;
+        
+        // Archivo de salida (csv)
+        FILE *resultsFile;
+        
+        int main(int argc, char **argv)
+        {
+            if (argc < 7)
+            {
+                printf("Uso correcto ./main D L CLS S1 S2 resultsFile");
+                exit(EXIT_FAILURE);
+            }
+            else
+            {
+                // D: Salto entre elementos
+                D = atoi(argv[1]);
+                // L: Número de lineas cache a usar
+                L = atoi(argv[2]);
+                // CLS: Tamaño de línea en bytes
+                CLS = atoi(argv[3]);
+                // S1: Número de líneas en la L1
+                S1 = atoi(argv[4]);
+                // S2: Número de líneas en la L2
+                S2 = atoi(argv[5]);
+                // Hallar R: numero de elem a sumar
+                if (D <= 0 || L <= 0 || CLS <= 0 || S1 <= 0 || S2 <= 0) // Comprobamos que los valores de entrada son válidos
+                {
+                    printf("Alguno de los argumentos numéricos es incorrecto\n");
+                    exit(EXIT_FAILURE);
+                }
+        
+                /*
+                 * Cálculo del número de elementos en un array
+                 * Si D es mayor que el número de doubles que caben en una línea caché, entonces cada elemento se consultará
+                 * en una nueva línea, así que el número de líneas visitadas será igual que el número de elementos a los que accedemos
+                 *
+                 * En caso de que el valor de D sea menor, entonces realizamos un cálculo para tener en cuenta que habrá elementos
+                 * que se consultan de una misma línea
+                 */
+                if (D > (CLS / sizeof(double)))
+                    R = L;
+                else
+                    R = (int)ceil((double)(L * CLS) / (double)(D * sizeof(double)));
+            }
+        
+            double *A, S[10], S_medio;
+            int ind[R];
+            double ck, ck_medio;
+            int accesos = 10 * R;
+        
+            /*
+             * Reserva de memoria para el vector A
+             * El espacio reservado es igual al número de elementos consultados por el espacio que necesita cada uno,
+             * esto es, el tamaño de un double por D, el número de doubles que ocupa cada uno.
+             * Alineamos esta reserva de memoria con el CLS (tamaño de línea) para asegurarnos de que consultamos el
+             * número de líneas deseado.
+             */
+            A = (double *)_mm_malloc(R * D * sizeof(double), CLS);
+        
+            // Inicializamos el vector ind y los números aleatorios de A
+            srand(time(NULL));
+            for (int i = 0; i < R; i++)
+            {
+                ind[i] = i * D;
+                A[ind[i]] = (((double)rand() / RAND_MAX) + 1.0); // double en rango [1,2)
+                if (rand() / RAND_MAX < 0.5)
+                {
+                    A[ind[i]] = -A[ind[i]]; // signo aleatorio
+                }
+            }
+        
+            // Empezamos a contar el tiempo
+            start_counter();
+        
+            // Repetimos la reducción del vector 10 veces
+            for (int i = 0; i < 10; i++)
+            {
+                S[i] = 0;
+                for (int j = 0; j < R; j++)
+                {
+                    S[i] += A[ind[j]];
+                }
+            }
+        
+            // Cálculo del valor medio de las S, para evitar que el compilador no optimize agresivamente y acabe sin calcular los resultados S[i]
+            for (int i = 0; i < 10; i++)
+            {
+                S_medio += S[i];
+            }
+            S_medio /= 10;
+        
+            // Obtenemos los resultados temporales
+            ck = get_counter();
+            ck_medio = (double)(ck / accesos);
+        
+            // Imprimimos datos y resultados
+        
+            // Abrimos el archivo de resultados para meter la línea correspondiente a esta ejecución
+            resultsFile = fopen(argv[6], "a");
+            if (resultsFile == NULL)
+            {
+                printf("El archivo de resultados \"%s\" no existe!\n", argv[6]);
+                exit(EXIT_FAILURE);
+            }
+            // Formato de linea: D, R, L, ck, ck_medio
+            fprintf(resultsFile, "%d,%d,%d,%d,%lf\n", D, R, L, (int)ck, ck_medio);
+        
+            // También imprimimos por consola (o redirigimos con un pipe) información más detallada acerca de esta
+            printf("Resultados impresos al fichero de resultados con éxito");
+            printf("DEBUG INFO:\n");
+            printf("Argumentos del test:\n");
+            printf("\tNúmero de elementos consultados: R = %d\n", R);
+            printf("\tSalto entre elementos consultados: D = %d (%ld bytes)\n", D, (D * sizeof(double)));
+            printf("\tNúmero de líneas accedidas: L = %d\n", L);
+            printf("\nPropiedades del ordenador:\n");
+            printf("\tTamaño de línea: CLS = %d\n", CLS);
+            printf("\tNúmero de líneas en caché nivel 1: S1 = %d\n", S1);
+            printf("\tNúmero de líneas en caché nivel 2: S2 = %d\n", S2);
+            printf("\nTiempos y ciclos:\n");
+            printf("\tCiclos de ejecución totales = %1.10lf\n", ck);
+            printf("\tTiempo medio de acceso = %1.10lf ciclos\n", ck_medio);
+        
+            // Imprimimos el vector S y el S_medio
+            printf("\nVector de resultados:\n");
+            for (int i = 0; i < 10; i++)
+            {
+                printf("\tS[%d]: %lf\n", i, S[i]);
+            }
+            printf("S medio = %lf\n", S_medio);
+        
+            // Liberamos la memoria asignada y acabamos
+            _mm_free(A);
+            printf("\nMemoria liberada y programa terminado con éxito!\n");
+            return EXIT_SUCCESS;
+        }
+        
+        /**
+         * Funciones para medir tiempos de la librería aportada en el CV
+         * rutinas_clock.c
+         */
+        
+        /* Set *hi and *lo to the high and low order bits of the cycle counter.
+        Implementation requires assembly code to use the rdtsc instruction. */
+        void access_counter(unsigned *hi, unsigned *lo)
+        {
+            asm("rdtsc; movl %%edx,%0; movl %%eax,%1" /* Read cycle counter */
+                : "=r"(*hi), "=r"(*lo)                /* and move results to */
+                : /* No input */                      /* the two outputs */
+                : "%edx", "%eax");
+        }
+        
+        /* Record the current value of the cycle counter. */
+        void start_counter()
+        {
+            access_counter(&cyc_hi, &cyc_lo);
+        }
+        
+        /* Return the number of cycles since the last call to start_counter. */
+        double get_counter()
+        {
+            unsigned ncyc_hi, ncyc_lo;
+            unsigned hi, lo, borrow;
+            double result;
+        
+            /* Get cycle counter */
+            access_counter(&ncyc_hi, &ncyc_lo);
+        
+            /* Do double precision subtraction */
+            lo = ncyc_lo - cyc_lo;
+            borrow = lo > ncyc_lo;
+            hi = ncyc_hi - cyc_hi - borrow;
+            result = (double)hi * (1 << 30) * 4 + lo;
+            if (result < 0)
+            {
+                fprintf(stderr, "Error: counter returns neg value: %.0f\n", result);
+            }
+            return result;
+        }
+        \end{lstlisting}
+        \newpage
+        \large{Código del programa \texttt{mediana.c}}
+        \begin{lstlisting}
+        /**
+         * @author Pablo Landrove (@PabloLandro)
+         * @author Pablo Díaz (@derivada)
+         * @brief Práctica 1 Arquitectura de Computadores
+         * @date 2022-02-16
+         *
+         * NOTA: Compilar con las flags -O0 y -msse3
+         */
+        
+        #include <stdlib.h>
+        #include <stdio.h>
+        #include <math.h>
+        #include <string.h>
+        
+        void insertionSortInt(int array[], int size);
+        void insertionSortDouble(double array[], int size);
+        
+        int main(int argc, char **argv)
+        {
+            FILE *datos, *result;
+            size_t size = 100;
+            char *line = malloc(size * sizeof(char));
+            double ck_medios[35][10];
+            int cks[35][10];
+            int pts[35][3];
+            char *filename = (char *)malloc(100 * sizeof(char));
+        
+            for (int i = 1; i <= 10; i++)
+            {
+                sprintf(filename, "results%d.csv", i);
+                if ((datos = fopen(filename, "r")) == NULL)
+                {
+                    perror("Error al abrir el archivo");
+                    exit(EXIT_FAILURE);
+                }
+                int j = 0;
+                getline(&line, &size, datos);
+                while (getline(&line, &size, datos))
+                {
+                    //printf("LINE: %s\n", line);
+                    char *tok;
+                    tok = strtok(line, ",");
+                    pts[j][0] = atoi(tok);
+                    tok = strtok(NULL, ",");
+                    pts[j][1] = atoi(tok);
+                    tok = strtok(NULL, ",");
+                    pts[j][2] = atoi(tok);
+                    tok = strtok(NULL, ",");
+                    cks[j][i - 1] = atoi(tok);
+                    tok = strtok(NULL, ",");
+                    ck_medios[j][i - 1] = strtod(tok, NULL);
+                    j++;
+                    if (j >= 35)
+                        break;
+                }
+                fclose(datos);
+            }
+        
+            result = fopen("results.csv", "w");
+            fprintf(result, "D,R,L,ck,ck_medio\n");
+        
+            for (int j = 0; j < 35; j++)
+            {
+                insertionSortInt(cks[j], 10);
+                insertionSortDouble(ck_medios[j], 10);
+                int ck_mediana = (cks[j][4] + cks[j][5]) / 2;
+                double ck_medios_mediana = (ck_medios[j][4] + ck_medios[j][5]) / 2;
+                fprintf(result, "%d,%d,%d,%d,%lf\n", pts[j][0], pts[j][1], pts[j][2], ck_mediana, ck_medios_mediana);
+            }
+        
+            fclose(result);
+            exit(EXIT_SUCCESS);
+        }
+        
+        void insertionSortInt(int array[], int size)
+        {
+            for (int step = 1; step < size; step++)
+            {
+                int key = array[step];
+                int j = step - 1;
+        
+                // Compare key with each element on the left of it until an element smaller than
+                // it is found.
+                // For descending order, change key<array[j] to key>array[j].
+                while (key < array[j] && j >= 0)
+                {
+                    array[j + 1] = array[j];
+                    --j;
+                }
+                array[j + 1] = key;
+            }
+        }
+        
+        void insertionSortDouble(double array[], int size)
+        {
+            for (int step = 1; step < size; step++)
+            {
+                double key = array[step];
+                int j = step - 1;
+        
+                // Compare key with each element on the left of it until an element smaller than
+                // it is found.
+                // For descending order, change key<array[j] to key>array[j].
+                while (key < array[j] && j >= 0)
+                {
+                    array[j + 1] = array[j];
+                    --j;
+                }
+                array[j + 1] = key;
+            }
+        }
+    \end{lstlisting}
+    \newpage
+    \twocolumn
+	\section{Metodología de las pruebas}
+	% Aquí meter como se hacen las pruebas (i, D, L, R...)
+	Para evitar realizar cada prueba manualmente introduciendo distintos argumentos por consola, hemos generado un script de instrucciones \texttt{bash} (\texttt{run\_tests.sh}) para realizar las pruebas y guardarlas en archivos de texto con un solo comando. Además en este script llamamos a otros programas como \testtt{mediana.c}, cuyo uso se explica más adelante.\par
+	
+	Tomamos 5 valores de D, varios menores que 8 (ya que con estos valores consultaremos varios elementos en una misma línea) y luego otros mayores hasta 100. Los valores de L son los indicados en el enunciado de la práctica. El valor de R se escoge automáticamente por el programa de C para cada par de valores de D y L, ya que debemos consultar el número de elementos tal que dada la separación D, accedemos a L líneas de caché distintas.\par
+	
+	Además para cada de los valores anteriormente mencionados, repetimos las pruebas i veces y se guardan en los archivos \texttt{resultsi.csv} junto con el número de ciclos total y el número medio de ciclos por acceso. Posteriormente escogemos la mediana del número de ciclos para cada par (D, L) y así evitar que los datos dependan fuertemente de la ejecución y la influencia de otros procesos. Después de realizar la mediana guardamos los datos en \texttt{results.csv}.\par
+	
+	\section{Características del ordenador}
+	% Aquí meter las características del CPU y la caché
+	Las características generales del equipo en el que se realizaron las pruebas son las siguientes:
+	
+	\begin{itemize}
+        \item OS: Ubuntu 20.04.4 LTS x86\_64 
+        \item Kernel: 5.13.0-35-generic 
+        \item Intel i5-8300H (4) @ 2.303GHz
+        \item Memoria RAM: 3925MiB
+    \end{itemize}
+    
+    Las características de la caché L1 (de datos, la de instrucciones es igual) de cada núcleo son las siguientes:
+    
+	\begin{itemize}
+        \item Tamaño: 128 KiB (131072 bytes)
+        \item Tamaño de línea: 64 bytes \textit{= CLS}
+        \item Número de líneas: 512 \textit{= S1}
+        \item Tipo: Asociativa por conjuntos, 8 líneas por conjunto, 64 conjuntos
+    \end{itemize}
+    
+    y las de la caché L2 son las siguientes: 
+    
+	\begin{itemize}
+        \item Tamaño: 1 MiB (1048576 bytes)
+        \item Tamaño de línea: 64 bytes \textit{= CLS}
+        \item Número de líneas: 4096 \textit{= S2}
+        \item Tipo: Asociativa por conjuntos, 8 líneas por conjunto, 64 conjuntos
+    \end{itemize}
+    
+    Como vemos, hemos obtenido los parámetros CLS, S1 y S2 que fueron usados en el programa a partir de esto. La información de la CPU fue obtenida mediante el comando \texttt{neofetch}, la información principal de la caché fue obtenida en la función \texttt{info\_cache} en el script bash adjunto y resumida en el archivo generado por este \texttt{cache\_info.txt}, por último, el tipo de la caché fue obtenido mediante el comando \texttt{hardinfo}.
+    
+	\section{Pruebas y resultados}
+	% Aquí meter las gráficas comentadas y lo que sacamos de ellas
+	Tras las ejecuciones explicadas anteriormente, los resultados obtenidos en \texttt{results.csv} se procesan en un script de \textsf{R} llamado \texttt{graficas.R}. En estas gráficas se intentaron relacionar los valores del número de líneas de caché consultadas \texttt{L}, el espacio entre elementos \texttt{D} y el número de ciclos medios en la ejecución del programa \textt{ck\_medio}.
+	
+    \begin{figure*}
+        \includegraphics{grafL}
+        \caption{Test}
+    \end{figure*}
+
+	\section{Conclusión}
+    % Conclusión final
+    
+    % Por si hace falta meter cuadros
+	%El cuadro~\ref{tab:valora} muestra un ejemplo de cuadro.
+	
+	
+%------------------------------------------------
+	
+\section{Resultados}
+Se presentan resultados en tablas o en figuras de modo que todas las tablas y figuras tengan un formato similar. Si son datos que nosotros no hemos obtenido, sino que son sacados de libros, artículos o webs debemos indicar la fuente de que fueron obtenidos. Se presentan los resultados.
+	
+En los resultados debemos describir cómo hemos realizado los experimentos para que puedan ser reproducidos por terceros. Hay que comentar los resultados antes de pasar a la siguiente sección. 
+	
+\subsection{Ejemplo subsección}
+Esta sección puede estar dividida en varias subsecciones. 
+	
+	
+%------------------------------------------------
+	
+\section{Conclusiones}
+	
+El apartado de conclusiones explica qué problema ha sido tratado en el documento, qué fue lo que se hizo y cómo se trabajó. Será una especie de recordatorio de todo el documento.
+
+Se deberán ir desglosando las principales observaciones, conclusiones que podemos extraer y los problemas que se han ido encontrando al ir realizando nuestro trabajo.
+
+Además, este apartado es el adecuado para exponer cuales podrían ser posibles trabajos futuros que completen lo explicado en este trabajo. 
+
+%----------------------------------------------------------------------------------------
+%	Referencias
+%----------------------------------------------------------------------------------------
+	
+\begin{thebibliography}{99} % Bibliografía - alternativamente, se recomienda el uso de bibtex o biblatex
+		
+	\bibitem[1]{Intel:2005}
+    Uhlig, Rich, et al.
+	\newblock {\em Intel virtualization technology.}
+	\newblock Computer, vol. 38, no. 5, pp. 48--56, 2005.
+	\bibitem[2]{spec} Standard Performance Evaluation Corporation, 
+	\newblock \href{http://www.specbench.org}{http://www.specbench.org}, 	\newblock [online] última visita 20 de marzo de 2017.
+		
+\end{thebibliography}
+	
+	%----------------------------------------------------------------------------------------
+	
+\end{document}
