@@ -44,11 +44,14 @@ int D, L, R;
 // Archivo de salida (csv)
 FILE *resultsFile;
 
+int randomize;
+void shuffle(int A[], int n);
+
 int main(int argc, char **argv)
 {
-    if (argc < 7)
+    if (argc < 8)
     {
-        printf("Uso correcto ./main D L CLS S1 S2 resultsFile");
+        printf("Uso correcto ./main D L CLS S1 S2 RANDOMIZED resultsFile");
         exit(EXIT_FAILURE);
     }
     else
@@ -63,6 +66,9 @@ int main(int argc, char **argv)
         S1 = atoi(argv[4]);
         // S2: Número de líneas en la L2
         S2 = atoi(argv[5]);
+        // RANDOMIZE: Aleatorizar array o no
+        randomize = atoi(argv[6]);
+
         // Hallar R: numero de elem a sumar
         if (D <= 0 || L <= 0 || CLS <= 0 || S1 <= 0 || S2 <= 0) // Comprobamos que los valores de entrada son válidos
         {
@@ -110,6 +116,13 @@ int main(int argc, char **argv)
         }
     }
 
+    // Randomizamos el array de índices para accesos a memoria más aleatorios
+    // (Depende del parámetro RANDOMIZE_ACCESSES)
+    if (randomize)
+    {
+        shuffle(ind, R);
+    }
+
     // Empezamos a contar el tiempo
     start_counter();
 
@@ -137,7 +150,7 @@ int main(int argc, char **argv)
     // Imprimimos datos y resultados
 
     // Abrimos el archivo de resultados para meter la línea correspondiente a esta ejecución
-    resultsFile = fopen(argv[6], "a");
+    resultsFile = fopen(argv[7], "a");
     if (resultsFile == NULL)
     {
         printf("El archivo de resultados \"%s\" no existe!\n", argv[6]);
@@ -150,6 +163,11 @@ int main(int argc, char **argv)
     printf("Resultados impresos al fichero de resultados con éxito");
     printf("DEBUG INFO:\n");
     printf("Argumentos del test:\n");
+    printf("\tRandomización de accesos al array: ");
+    if (randomize)
+        printf("Sí\n");
+    else
+        printf("No\n");
     printf("\tNúmero de elementos consultados: R = %d\n", R);
     printf("\tSalto entre elementos consultados: D = %d (%ld bytes)\n", D, (D * sizeof(double)));
     printf("\tNúmero de líneas accedidas: L = %d\n", L);
@@ -216,4 +234,16 @@ double get_counter()
         fprintf(stderr, "Error: counter returns neg value: %.0f\n", result);
     }
     return result;
+}
+
+// Shuffle del array mediante el algoritmo de Fisher-Yates
+void shuffle(int A[], int n)
+{
+    for (int i = n - 1; i >= 1; i--)
+    {
+        int j = rand() % (i + 1);
+        int temp = A[i];
+        A[i] = A[j];
+        A[j] = temp;
+    }
 }

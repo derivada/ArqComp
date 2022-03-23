@@ -1,0 +1,29 @@
+Resultados impresos al fichero de resultados con éxitoDEBUG INFO:
+Argumentos del test:
+	Número de elementos consultados: R = 24576
+	Salto entre elementos consultados: D = 1 (8 bytes)
+	Número de líneas accedidas: L = 3072
+
+Propiedades del ordenador:
+	Tamaño de línea: CLS = 64
+	Número de líneas en caché nivel 1: S1 = 512
+	Número de líneas en caché nivel 2: S2 = 4096
+
+Tiempos y ciclos:
+	Ciclos de ejecución totales = 1563054.0000000000
+	Tiempo medio de acceso = 6.3600830078 ciclos
+
+Vector de resultados:
+	S[0]: -36800.413911
+	S[1]: -36800.413911
+	S[2]: -36800.413911
+	S[3]: -36800.413911
+	S[4]: -36800.413911
+	S[5]: -36800.413911
+	S[6]: -36800.413911
+	S[7]: -36800.413911
+	S[8]: -36800.413911
+	S[9]: -36800.413911
+S medio = -36800.413911
+
+Memoria liberada y programa terminado con éxito!

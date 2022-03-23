@@ -61,10 +61,19 @@ info_cache
 # Tomar  medidas  de  ciclos  para  los  siguientes  valores  de  
 # L:  0.5*S1,  1.5*S1,  0.5*S2,  0.75*S2,  2*S2, 4*S2,  8*S2,  
 # siendo  S1  el  número  de  líneas  caché  que  caben en  la  caché L1  de  datos  y  S2  el  número  de  líneas  caché que caben en la caché L2.
-valoresD=(1 4 8 17 99) # 5 Valores de D elegidos entre 1 y 100
+
+#### Estos son los únicos 3 datos de entrada reales
+D_VALUES=(1 4 8 17 99)      # 5 Valores de D elegidos entre 1 y 100
+OPT_LEVEL=3                 # Nivel de optimización de GCC. Debe estar entre 0 y 3
+RANDOMIZED=1                # Si se aleatorizan los arrays
+####
+
+
+RESULTS_DIR="./test_D_${D_VALUES[1]}_${D_VALUES[2]}_${D_VALUES[3]}_${D_VALUES[4]}_${D_VALUES[5]}_O${OPT_LEVEL}_R${RANDOMIZED}" # Directorio de salida de los resultados
+
 
 # Compilar el programa con las flags necesarias
-gcc -o main main.c -O0 -msse3 -Wall -lm -pedantic 2> compl_errors.txt
+gcc -o main main.c -O${OPT_LEVEL} -msse3 -Wall -lm -pedantic 2> compl_errors.txt
 if [[ $? != 0 ]]; then
   echo "El programa principal no se pudo compilar!"
   exit 1
@@ -90,23 +99,23 @@ do
         rm $RESULTS_FILE
     fi
     echo "D,R,L,ck,ck_medio" > $RESULTS_FILE
-    for D in "${valoresD[@]}";
+    for D in "${D_VALUES[@]}";
     do
         echo "Haciendo tests para D = $D, i = $i"
         L=$(echo "0.5*$S1" | bc)
-        ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
+        ./main $D $L $CLS $S1 $S2 $RANDOMIZED $RESULTS_FILE > "logs/log_${D}_${L}.txt"
         L=$(echo "1.5*$S1" | bc)
-        ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
+        ./main $D $L $CLS $S1 $S2 $RANDOMIZED $RESULTS_FILE > "logs/log_${D}_${L}.txt"
         L=$(echo "0.5*$S2" | bc)
-        ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
+        ./main $D $L $CLS $S1 $S2 $RANDOMIZED $RESULTS_FILE > "logs/log_${D}_${L}.txt"
         L=$(echo "0.75*$S2" | bc)
-        ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
+        ./main $D $L $CLS $S1 $S2 $RANDOMIZED $RESULTS_FILE > "logs/log_${D}_${L}.txt"
         L=$(echo "2*$S2" | bc)
-        ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
+        ./main $D $L $CLS $S1 $S2 $RANDOMIZED $RESULTS_FILE > "logs/log_${D}_${L}.txt"
         L=$(echo "4*$S2" | bc)
-        ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
+        ./main $D $L $CLS $S1 $S2 $RANDOMIZED $RESULTS_FILE > "logs/log_${D}_${L}.txt"
         L=$(echo "8*$S2" | bc)
-        ./main $D $L $CLS $S1 $S2 $RESULTS_FILE > "logs/log_${D}_${L}.txt"
+        ./main $D $L $CLS $S1 $S2 $RANDOMIZED $RESULTS_FILE > "logs/log_${D}_${L}.txt"
     done
 done
 
@@ -114,8 +123,19 @@ done
 gcc -o mediana mediana.c -Wall -pedantic 2> compl_errors.txt
 
 # Calculamos la mediana de los resultados y obtenemos los resultados definitivos en results.csv
-./mediana
-rm results{1..10}.csv # Borramos resultados parciales
+./mediana 
+rm results{1..10}.csv
+
+# Movemos el resultado al directorio de salida
+if ! test -d ${RESULTS_DIR}
+then
+    mkdir ${RESULTS_DIR}
+fi
+
+# Mover los resultados al archivo de tests y hacer una copia del archivo de R por comodidad
+# Como el script de R coge el directorio actual como working directory así automatizamos un poco
+mv "results.csv" "${RESULTS_DIR}/results.csv" 
+cp "graficas.R" "${RESULTS_DIR}/graficas.R"
 
 # Limpiamos ejecutables
 rm main

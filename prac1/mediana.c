@@ -17,27 +17,27 @@ void insertionSortDouble(double array[], int size);
 
 int main(int argc, char **argv)
 {
-    FILE *datos, *result;
+    FILE *inputData, *output;
     size_t size = 100;
     char *line = malloc(size * sizeof(char));
     double ck_medios[35][10];
     int cks[35][10];
     int pts[35][3];
-    char *filename = (char *)malloc(100 * sizeof(char));
+    char *inputFilename = (char *)malloc(100 * sizeof(char));
 
     for (int i = 1; i <= 10; i++)
     {
-        sprintf(filename, "results%d.csv", i);
-        if ((datos = fopen(filename, "r")) == NULL)
+        sprintf(inputFilename, "results%d.csv", i);
+        if ((inputData = fopen(inputFilename, "r")) == NULL)
         {
-            perror("Error al abrir el archivo");
+            perror("Error al abrir el archivo de entrada\n");
             exit(EXIT_FAILURE);
         }
         int j = 0;
-        getline(&line, &size, datos);
-        while (getline(&line, &size, datos))
+        getline(&line, &size, inputData);
+        while (getline(&line, &size, inputData))
         {
-            //printf("LINE: %s\n", line);
+            // printf("LINE: %s\n", line);
             char *tok;
             tok = strtok(line, ",");
             pts[j][0] = atoi(tok);
@@ -53,11 +53,17 @@ int main(int argc, char **argv)
             if (j >= 35)
                 break;
         }
-        fclose(datos);
+        fclose(inputData);
     }
 
-    result = fopen("results.csv", "w");
-    fprintf(result, "D,R,L,ck,ck_medio\n");
+    output = fopen("results.csv", "w");
+    if (output == NULL)
+    {
+        perror("No se pudo abrir el archivo de salida results.csv\n");
+        exit(EXIT_FAILURE);
+    }
+
+    fprintf(output, "D,R,L,ck,ck_medio\n");
 
     for (int j = 0; j < 35; j++)
     {
@@ -65,10 +71,11 @@ int main(int argc, char **argv)
         insertionSortDouble(ck_medios[j], 10);
         int ck_mediana = (cks[j][4] + cks[j][5]) / 2;
         double ck_medios_mediana = (ck_medios[j][4] + ck_medios[j][5]) / 2;
-        fprintf(result, "%d,%d,%d,%d,%lf\n", pts[j][0], pts[j][1], pts[j][2], ck_mediana, ck_medios_mediana);
+        fprintf(output, "%d,%d,%d,%d,%lf\n", pts[j][0], pts[j][1], pts[j][2], ck_mediana, ck_medios_mediana);
     }
 
-    fclose(result);
+    free(inputFilename);
+    fclose(output);
     exit(EXIT_SUCCESS);
 }
 
