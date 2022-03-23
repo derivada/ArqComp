@@ -12,22 +12,39 @@ datos$L = factor(datos$L)
 
 # Grafica D agrupado por L
 plotL = ggplot(data = datos, mapping = aes(x = D, y = ck_medio)) +
-  geom_line(aes(color = L, group = L)) +
-  labs(title = "Comparación del valor de D con ck_medio, agrupado por el número de líneas L consultadas",
+  geom_line(aes(color = L, group = L), lwd = 2) +
+  labs(title = "Comparación salto-ciclos",
        x = "D (Salto en memoria entre posiciones del array)",
        y = "Ciclos de reloj por acceso",
        fill = "L") +
-  theme_bw()
+  theme_bw() +
+  theme(legend.title = element_text(size = 20),
+        legend.text = element_text(size=20),
+        legend.key.size = unit(1, 'cm'),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        title = element_text(size = 20))
 ggsave("grafica_agrup_L.png", plotL, width = 15, height = 10)
+plotL
 
 # Grafica L agrupado por D
 plotD = ggplot(data = datos, mapping = aes(x = L, y = ck_medio)) +
-  geom_line(aes(color = D, group = D)) +
-  labs(title = "Comparación del valor de L con ck_medio, agrupado por el salto entre elementos D",
+  geom_line(aes(color = D, group = D), lwd = 2) +
+  labs(title = "Comparación lineas consultadas-ciclos",
        x = "L (líneas de caché consultadas)",
        y = "Ciclos de reloj por acceso",
        fill = "D") +
-  theme_bw()
+  theme_bw() +
+  theme(legend.title = element_text(size = 20),
+        legend.text = element_text(size=20),
+        legend.key.size = unit(1, 'cm'),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        title = element_text(size = 20))
 ggsave("grafica_agrup_D.png", plotD, width = 15, height = 10)
 
 # Refrescar datos
@@ -63,4 +80,3 @@ plotD
 plotL
 plot3D
 #plotLOC
-
