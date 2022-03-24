@@ -64,13 +64,13 @@ info_cache
 
 #############
 # Estos son los únicos 3 datos de entrada reales para los tests
-D_VALUES=(1 4 8 18 99)      # 5 Valores de D elegidos entre 1 y 100
-OPT_LEVEL=3                 # Nivel de optimización de GCC. Debe estar entre 0 y 3
-RANDOMIZED=1                # Si se aleatorizan los arrays
+D_VALUES=(1 4 8 16 80)      # 5 Valores de D elegidos entre 1 y 100
+OPT_LEVEL=0                 # Nivel de optimización de GCC. Debe estar entre 0 y 3
+RANDOMIZED=0                # Si se aleatorizan los arrays
 #############
 
 
-RESULTS_DIR="./test_D_${D_VALUES[1]}_${D_VALUES[2]}_${D_VALUES[3]}_${D_VALUES[4]}_${D_VALUES[5]}_O${OPT_LEVEL}_R${RANDOMIZED}" # Directorio de salida de los resultados
+RESULTS_DIR="./test_D_${D_VALUES[0]}_${D_VALUES[1]}_${D_VALUES[2]}_${D_VALUES[3]}_${D_VALUES[4]}_O${OPT_LEVEL}_R${RANDOMIZED}" # Directorio de salida de los resultados
 
 
 # Compilar el programa con las flags necesarias

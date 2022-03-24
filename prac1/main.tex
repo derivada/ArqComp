@@ -37,8 +37,10 @@
 
 \usepackage{hyperref} % For hyperlinks in the PDF
 
+\usepackage{float}
+
 % PAQUETES PROPIOS QUE NO SON DE LA PLANTILLAS
-\usepackage{listings} % Para insertar código
+\usepackage{listings} % Para insertar codigo
 \usepackage{multicol}
 \usepackage{color}
 
@@ -61,6 +63,10 @@
   breakatwhitespace=true,
   tabsize=3
 }
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[backend=bibtex]{biblatex}
+\bibliography{database.bib}
 
 %----------------------------------------------------------------------------------------
 %	TITLE SECTION
@@ -71,7 +77,7 @@
 \pretitle{\begin{center}\huge\bfseries} % Article title formatting
 	\posttitle{\end{center}} % Article title closing formatting
 
-\title{Informe Práctica 1} % Article title
+\title{Informe Practica 1} % Article title
 \author{%
 	\textsc{Pablo Landrove Pérez-Gorgoroso, Pablo Díaz Viñambres} \\[1ex] % Your name
 	\normalsize Arquitectura de Computadores\\
@@ -103,20 +109,160 @@
 	
 	\section{Introducción}
 	
-	En esta práctica el objetivo es mejorar el rendimiento de un programa sencillo escrito en C optimizando el acceso y la forma de los accesos a la caché del procesador.	Cada procesador cuenta con varios niveles de memoria caché de acceso rápido pero baja capacidad, esto permite que el número medio de ciclos por acceso a memoria sea mucho menor que si accedemos a la memoria principal en cada consulta. Reducir el número de líneas usadas y el orden de acceso a ellas nos dará un aumento de rendimiento notable en cualquier programa. \\
+	En esta práctica el objetivo es mejorar el rendimiento de un programa sencillo escrito en C optimizando el acceso y la forma de los accesos a la caché del procesador.	Cada procesador cuenta con varios niveles de memoria caché de acceso rápido pero baja capacidad, lo cuál permite que el número medio de ciclos de reloj para cada acceso a memoria sea mucho menor que si tuviéramos que ir a la memoria principal en cada consulta. Reducir el número de lineas usadas y optimizar el orden de acceso a ellas nos dára un aumento de rendimiento notable en cualquier programa. \\
 	
-	Demostraremos que al reducir la localidad de los datos consultados, aumenta el número medio de ciclos por acceso a dato. Al variar L y D cambiaremos el número de líneas consultadas y el espacio de memoria entre cada dato, aumentando estos valores. \\
+	Demostraremos que al reducir la localidad de los datos consultados, aumenta el número medio de ciclos por acceso a dato. Al variar los parámetros L y D explicados a continuación cambiaremos el número de líneas consultadas y el espacio de memoria entre cada dato, aumentando estos valores. \\
 	
-	En las siguientes secciones, explicaremos más detallamente en qué consiste el programa y la metodología de las pruebas, daremos las características del ordenador utilizado y presentaremos los resultados en forma de gráficas comentadas. Por último, deduciremos qué factores afectaron consistentemente al rendimiento del programa. \\
+	En las siguientes secciones, explicaremos más detallamente en que consiste el programa y la metodología de las pruebas, daremos las características del ordenador utilizado y presentaremos los resultados en forma de graficas comentadas. Por ultimo, deduciremos que factores afectaron consistentemente al rendimiento del programa. \\
 	
 	%------------------------------------------------
 	\section{Descripción del problema}
-	% Aquí meter código del problema, explicación de como funciona
-	El código a optimizar consiste en un programa en C, compilado sin optimizaciones del compilador \texttt{gcc}. Este programa realiza una operación de reducción de suma en el array \texttt{A}, de \texttt{R} elementos de tipo \texttt{double} separados entre ellos por \texttt{D} elementos vacíos. Esta operación se realiza 10 veces y después se calcula el valor medio de la suma. El programa principal en el que esto fue implementado es \textbf{main.c}, insertado a continuación con comentarios que ayudan a entender que hace cada parte específica:
-	
+	% Aqui meter codigo del problema, explicacion de como funciona
+	El código a optimizar consiste en un programa en C, compilado mediante \texttt{gcc} y con optimizaciones en algunas de las pruebas (en el guión se dice que no se usen, y los resultados principales no lo hacen, pero incluimos también una pequeña comparativa para ver cuánto se reduce el número de ciclos medios cuando se usan). \\
+	Este programa realiza una operacion de reducción de suma en el array \texttt{A}, de \texttt{R} elementos de tipo \texttt{double} separados entre ellos por \texttt{D} variables double que no se acceden. Esta operación se realiza 10 veces y después se calcula el valor medio de las 10 mediciones. El programa principal en el que esto fue implementado es \textbf{main.c}, insertado an el apéndice A con comentarios que ayudan a entender que hace cada parte del código. \\
 	\newpage
-	\onecolumn
-	\large{Código del programa \texttt{main.c}:}
+	\section{Metodología de las pruebas}
+	\subsection{Parámetros de las pruebas}
+	% Aqui meter como se hacen las pruebas (i, D, L, R...)
+	Para evitar realizar cada prueba manualmente introduciendo distintos argumentos por consola, hemos generado un script de instrucciones \texttt{bash} (\texttt{run\_tests.sh}) para realizar las pruebas y guardarlas en archivos de texto con un solo comando. Ademas en este script llamamos a otros programas como \texttt{mediana.c}, cuyo uso se explica más adelante. \\
+	
+    En este script hay 3 argumentos de entrada principales: \\
+    \begin{itemize}
+        \item \texttt{D\_VALUES}: Los 5 valores de D entre 1 y 100 pasados al programa, que indican la separación entre elementos del array que se suman.
+        \item \texttt{OPT\_LEVEL}: El nivel de optimización del programa de C, mediante la flag -On, será un entero entre 0 y 3.
+        \item \texttt{RANDOMIZE}: Un valor booleano que indica si se randomizará en el programa el acceso al vector de índices, lo cuál disminuye radicalmente la localidad de la operación.
+    \end{itemize}
+    
+    \subsection{Relación con la localidad espacial, temporal y el prefetching}
+    \label{cache}
+    El prefetching \cite{wikiprefetch} es una técnica presente en prácticamente todos los CPUs actuales que funciona cargando varias líneas de la caché extras cuándo se solicita alguno de los datos por parte del CPU. De esta forma, si el programa respeta la localidad espacial y temporal, el prefetching asegura que muchos de estos datos ya estén presentes en la caché de antemano y no haya que volver a memoria principal para buscarlos, aumentando el rendimiento. \\
+    
+    Al aumentar los valores de D (la separación en doubles de cada elemento consultado), reduciremos la localidad espacial de los datos puesto que los accesos se realizarán a posiciones más alejadas de la memoria. Este empeoramiento de la localidad espacial afecta a los ciclos por consulta puesto que existen menos posibilidades de que al traer una línea o conjunto de memoria a la caché se encuentre el dato que se necesitará a continuación, en cuyo caso habrá que traerlo de memoria principal. \\
+    
+    Existe otro parámetro que afecta mucho a esta localidad y también al prefetching, \texttt{RANDOMIZE}. Cuándo este parámetro está activo, los accesos al array \texttt{A} pasan de ser lineales de la forma \texttt{A[0], A[D], A[2*D], ...}  a ser aleatorios como \texttt{A[8*D], A[2*D], A[120*D], ...} esto causa que cada elemento a sumar este en promedio mucho más separado de los siguientes, lo cuál invalida la técnica de prefetching, al no servir de nada cuando los datos están demasiado separados y se encuentran fuera del rango de precarga. \\
+    
+    \subsection{Realización de las mediciones}
+    \label{metodologia}
+    A partir de esos argumentos, y usando los valores de L dados en el guión de la práctica, realizamos $ 5 * 7 = 35 $ ejecuciones del programa (5 valores de D y 7 de L distintos). Además para cada de los valores anteriormente mencionados, repetimos las pruebas 10 veces. Tras guardar los resultados de estas pruebas en los archivos \texttt{resultsi.csv}, que son archivos \texttt{csv} dónde cada línea contiene los parámetros del programa D, R, L y los tiempos de ejecución obtenidos ck y ck\_medio para cada una de las 35 ejecuciones. \\
+    
+    Posteriormente calculamos la mediana del número de ciclos para cada par (D, L) y así evitamos que los datos dependan fuertemente de la ejecución concreta y la influencia de otros procesos. Después de realizar la mediana guardamos los datos en el archivo de resultados final \texttt{results.csv} dentro de la una carpeta cuyo nombre refleja los anteriores parámetros del script \texttt{D, OPT y RANDOMIZE}.\par
+	
+	\section{Características del ordenador}
+	% Aqui meter las caracteristicas del CPU y la cache
+	Las características generales del equipo en el que se realizaron las pruebas son las siguientes:
+	
+	\begin{itemize}
+        \item OS: Ubuntu 20.04.4 LTS x86\_64 
+        \item Kernel: 5.13.0-35-generic 
+        \item Intel i5-8300H (4) @ 2.303GHz
+        \item Memoria RAM: 3925MiB
+    \end{itemize}
+    
+    Las características de la cache L1 (de datos, la de instrucciones es igual) de cada núcleo son las siguientes:
+    
+	\begin{itemize}
+        \item Tamaño: 128 KiB (131072 bytes)
+        \item Tamaño de línea: 64 bytes \textit{= CLS}
+        \item Número de líneas: 512 \textit{= S1}
+        \item Tipo: Asociativa por conjuntos, 8 lineas por conjunto, 64 conjuntos
+    \end{itemize}
+    
+    y las de la cache L2 son las siguientes: 
+    
+	\begin{itemize}
+        \item Tamaño: 1 MiB (1048576 bytes)
+        \item Tamaño de línea: 64 bytes \textit{= CLS}
+        \item Número de líneas: 4096 \textit{= S2}
+        \item Tipo: Asociativa por conjuntos, 8 lineas por conjunto, 64 conjuntos
+    \end{itemize}
+    
+    Como vemos, hemos obtenido los parametros CLS, S1 y S2 que fueron usados en el programa a partir de esto. La informacion de la CPU fue obtenida mediante el comando \texttt{neofetch}, la informacion principal de la cache fue obtenida en la funcion \texttt{info\_cache} en el script bash adjunto y resumida en el archivo generado por este \texttt{cache\_info.txt}, por ultimo, el tipo de la cache fue obtenido mediante el comando \texttt{hardinfo}.
+    
+	\section{Resultados}
+	
+	Las gráficas de esta sección se pueden observar con más detalle al final del documento en la sección de Gráficas Obtenidas \autoref{graficas}.Para obtenerlas, usamos un script de \texttt{RStudio} a partir de los datos obtenidos y recogidos en el archivo \texttt{results.csv} (ver\autoref{metodologia}). 
+
+	\subsection{Test 1: Comparaciones de D y L con ck\_medios}
+	En este primer test los parámetros son \texttt{D = \{1, 4, 8, 16, 80\}}, \texttt{OPT\_LEVEL = 0} y \texttt{RANDOMIZE = 0}, es decir, tenemos un test básico sin randomizar el array de índices ni aplicar optimizaciones de \texttt{gcc}. \\
+	
+	En la \textbf{Figura1} relacionamos los valores de L con los \texttt{Ck\_medios} obtenidos. Podemos observar que al consultar más líneas de caché el número de ciclos por acceso aumenta, esto se debe a que al pasar de cierto valor de L, llegamos a ocupar toda la memoria caché y se dan fallos de capacidad. Los valores que tomamos para L son \texttt{\{0.5*S1, 1.5*S1, 0.5*S2, 0.75*S2, 2*S2, 4*S2, 8*S2\}} siendo S1 el número de líneas que caben en la caché de nivel 1 y S2 las que caben en la de nivel 2. Entonces podemos ver que los saltos más grandes se dan cuando superamos la capacidad de una memoria caché. En la \textbf{Figura2} podemos distinguir cada línea según el valor de L. Las líneas amarilla y la naranja se corresponden a un L que no supera S1, siendo su tiempo de ejecución muy pequeño. Las verdes están entre S1 y S2, y tienen un tiempo de ejecución intermedio que sobre todo aumenta a partir de D = 16. Por último, las azules y moradas tienen valores que superan la capacidad de las dos cachés y podemos observar que son las ven más un incremento realmente exponencial de ciclos medios a partir de D = 8. En cualquier caso, al aumentar el valor de D (la separación en doubles entre cada dato tomado), el número de ciclos también es mayor, esto sucede dado que al acceder a posiciones de memoria muy separada, la localidad se reduce mucho, por lo que hay que realizar más accesos a la memoria principal. \\
+	
+	En la \textbf{Figura 2} relacionamos el valor de D con los ciclos. Como explicamos para la anterior gráfica, el acceso a los datos empeora al aumentar la separación puesto que la localidad se reduce y entonces obtenemos peores resultados.\\
+	
+	\begin{figure}[h!] 
+        \centering
+        \includegraphics[width=\linewidth]{grafica_agrup_D_1.png}
+        \caption{Relación de los ciclos de ejecución con D}
+    \end{figure}
+	
+	\begin{figure}[h!] 
+        \centering
+        \includegraphics[width=\linewidth]{grafica_agrup_L_1.png}
+        \caption{Relación de los ciclos de ejecución con L}
+    \end{figure}
+    
+	En la última figura de este apartado podemos observar desde un punto de vista paramétrico las magnitudes D (eje X), L (eje Z) y ck\_medios (eje Y). De esta forma podemos ver en una misma gráfica los 3 valores que nos interesan en cada uno de los 35 tests. \\
+    
+    \begin{figure}[h!] 
+        \centering
+        \includegraphics[width=\linewidth]{grafica_3d.png}
+        \caption{Relación de los ciclos de ejecución con L y D}
+    \end{figure}
+    
+	\newpage
+	% Aqui meter las graficas comentadas y lo que sacamos de ellas
+	Tras las ejecuciones explicadas anteriormente, los resultados obtenidos en \texttt{results.csv} se procesan en un script de \textsf{R} llamado \texttt{graficas.R}. En estas gráficas se intentaron relacionar los valores del número de lineas de cache consultadas \texttt{L}, el espacio entre elementos \texttt{D} y el número de ciclos medios en la ejecución del programa \texttt{ck\_medio}.
+	
+	
+	
+    \subsection{Test 2: Pruebas con optimización y randomización}
+    
+    En este apartado, se han realizado distintas pruebas utilizando accesos aleatorios al vector de índices y optimización del gcc con la opción -on. Para obtener las gráficas que referenciaremos a continuación, se utilizaron valores de D distintos a los del anterior apartado. \\
+    
+    En primer lugar, se comparó el efecto de la randomización en el acceso al vector ind, del que obtenemos los índices de los elementos consultados. En la \textbf{Figura 3} no estamos usando la randomización, mientras que en la \textbf{Figura 4} la activamos. Se observa claramente en la escala de la gráfica que los tiempos de ejecución son mucho más pequeños (de media 10 ciclos menos por acceso a memoria) cuando el array no está randomizado. Esto refuerza la hipótesis sobre el efecto de la localidad espacial y el prefetching en la eficiencia de un programa como vimos en el apartado sobre estos mecanismos de la memoria caché \autoref{cache}.
+    
+	\begin{figure}[h!] 
+        \centering
+        \includegraphics[width=\linewidth]{O0_R0_grafica_agrup_L.png}
+        \caption{Relación de los ciclos de ejecución con L, array de índices no randomizado}
+    \end{figure}
+	\begin{figure}[h!] 
+        \centering
+        \includegraphics[width=\linewidth]{O0_R1_grafica_agrup_L.png}
+        \caption{Relación de los ciclos de ejecución con L, array de índices randomizado}
+    \end{figure}
+    
+    \subsection{Test 3: Pruebas con optimización y randomización}
+    En este último test, veremos que al utilizar la optimización del compilador \texttt{gcc}mediante el argumento \texttt{-O3} (en comparación con no optimizar, \texttt{-O0}), el número de ciclos medios disminuye drásticamente. En la \textbf{Figura 5} no optimizamos el programa, mientras que en la \textbf{Figura 6} si lo hacemos. Los resultados arrojan un speedup de alrededor del 100\%, es decir, la eficiencia del programa se duplica al usar \texttt{-O3}. \\
+    
+    Estas optimizaciones se verán en mayor detalle en la siguiente práctica pero nos pareció interesante incluirlas aquí también al tener un efecto tan grande sobre los resultados en este programa. \\
+    
+    \begin{figure}[h!] 
+        \centering
+        \includegraphics[width=\linewidth]{O0_R0_grafica_agrup_D.png}
+        \caption{Relación de los ciclos de ejecución con D, sin optimizaciones}
+    \end{figure}
+    
+    \begin{figure}[h!] 
+    	\centering
+            \includegraphics[width=\linewidth]{O3_R0_grafica_agrup_D.png}
+            \caption{Relación de los ciclos de ejecución con D, con optimizaciones}
+    \end{figure}
+
+    % Conclusion final
+    \vfill\null
+    \section{Conclusiones}
+    Tras las pruebas realizadas variando los parámetros L, D y con la optimización de \texttt{gcc} llegamos a la conclusión de que efectivamente los peores resultados se obtienen con valores que nos dejan una baja localidad de los datos puesto que así son necesarios más accesos a memoria principal. \\
+    Además al randomizar el acceso a los datos vemos que la ejecución es más lenta, ya que empeoramos los efectos de la precarga debido a que resulta imposible predecir los datos que serán utilizados a continuación.\\
+    
+    % Por si hace falta meter cuadros
+    \newpage
+    \onecolumn
+    \printbibliography
+	\appendix 
+	\section{Código del programa}
+	
+	\Large{\texttt{main.c}:}
 	\begin{lstlisting}
     void start_counter();
         double get_counter();
@@ -154,28 +300,28 @@
             {
                 // D: Salto entre elementos
                 D = atoi(argv[1]);
-                // L: Número de lineas cache a usar
+                // L: Numero de lineas cache a usar
                 L = atoi(argv[2]);
-                // CLS: Tamaño de línea en bytes
+                // CLS: Tamaño de linea en bytes
                 CLS = atoi(argv[3]);
-                // S1: Número de líneas en la L1
+                // S1: Numero de lineas en la L1
                 S1 = atoi(argv[4]);
-                // S2: Número de líneas en la L2
+                // S2: Numero de lineas en la L2
                 S2 = atoi(argv[5]);
                 // Hallar R: numero de elem a sumar
-                if (D <= 0 || L <= 0 || CLS <= 0 || S1 <= 0 || S2 <= 0) // Comprobamos que los valores de entrada son válidos
+                if (D <= 0 || L <= 0 || CLS <= 0 || S1 <= 0 || S2 <= 0) // Comprobamos que los valores de entrada son validos
                 {
-                    printf("Alguno de los argumentos numéricos es incorrecto\n");
+                    printf("Alguno de los argumentos numericos es incorrecto\n");
                     exit(EXIT_FAILURE);
                 }
         
                 /*
-                 * Cálculo del número de elementos en un array
-                 * Si D es mayor que el número de doubles que caben en una línea caché, entonces cada elemento se consultará
-                 * en una nueva línea, así que el número de líneas visitadas será igual que el número de elementos a los que accedemos
+                 * Calculo del numero de elementos en un array
+                 * Si D es mayor que el numero de doubles que caben en una linea cache, entonces cada elemento se consultara
+                 * en una nueva linea, asi que el numero de lineas visitadas sera igual que el numero de elementos a los que accedemos
                  *
-                 * En caso de que el valor de D sea menor, entonces realizamos un cálculo para tener en cuenta que habrá elementos
-                 * que se consultan de una misma línea
+                 * En caso de que el valor de D sea menor, entonces realizamos un calculo para tener en cuenta que habra elementos
+                 * que se consultan de una misma linea
                  */
                 if (D > (CLS / sizeof(double)))
                     R = L;
@@ -190,14 +336,14 @@
         
             /*
              * Reserva de memoria para el vector A
-             * El espacio reservado es igual al número de elementos consultados por el espacio que necesita cada uno,
-             * esto es, el tamaño de un double por D, el número de doubles que ocupa cada uno.
-             * Alineamos esta reserva de memoria con el CLS (tamaño de línea) para asegurarnos de que consultamos el
-             * número de líneas deseado.
+             * El espacio reservado es igual al numero de elementos consultados por el espacio que necesita cada uno,
+             * esto es, el tamaño de un double por D, el numero de doubles que ocupa cada uno.
+             * Alineamos esta reserva de memoria con el CLS (tamaño de linea) para asegurarnos de que consultamos el
+             * numero de lineas deseado.
              */
             A = (double *)_mm_malloc(R * D * sizeof(double), CLS);
         
-            // Inicializamos el vector ind y los números aleatorios de A
+            // Inicializamos el vector ind y los numeros aleatorios de A
             srand(time(NULL));
             for (int i = 0; i < R; i++)
             {
@@ -212,7 +358,7 @@
             // Empezamos a contar el tiempo
             start_counter();
         
-            // Repetimos la reducción del vector 10 veces
+            // Repetimos la reduccion del vector 10 veces
             for (int i = 0; i < 10; i++)
             {
                 S[i] = 0;
@@ -222,7 +368,7 @@
                 }
             }
         
-            // Cálculo del valor medio de las S, para evitar que el compilador no optimize agresivamente y acabe sin calcular los resultados S[i]
+            // Calculo del valor medio de las S, para evitar que el compilador no optimize agresivamente y acabe sin calcular los resultados S[i]
             for (int i = 0; i < 10; i++)
             {
                 S_medio += S[i];
@@ -235,7 +381,7 @@
         
             // Imprimimos datos y resultados
         
-            // Abrimos el archivo de resultados para meter la línea correspondiente a esta ejecución
+            // Abrimos el archivo de resultados para meter la linea correspondiente a esta ejecucion
             resultsFile = fopen(argv[6], "a");
             if (resultsFile == NULL)
             {
@@ -245,19 +391,19 @@
             // Formato de linea: D, R, L, ck, ck_medio
             fprintf(resultsFile, "%d,%d,%d,%d,%lf\n", D, R, L, (int)ck, ck_medio);
         
-            // También imprimimos por consola (o redirigimos con un pipe) información más detallada acerca de esta
-            printf("Resultados impresos al fichero de resultados con éxito");
+            // Tambien imprimimos por consola (o redirigimos con un pipe) informacion mas detallada acerca de esta
+            printf("Resultados impresos al fichero de resultados con exito");
             printf("DEBUG INFO:\n");
             printf("Argumentos del test:\n");
-            printf("\tNúmero de elementos consultados: R = %d\n", R);
+            printf("\tNumero de elementos consultados: R = %d\n", R);
             printf("\tSalto entre elementos consultados: D = %d (%ld bytes)\n", D, (D * sizeof(double)));
-            printf("\tNúmero de líneas accedidas: L = %d\n", L);
+            printf("\tNumero de lineas accedidas: L = %d\n", L);
             printf("\nPropiedades del ordenador:\n");
-            printf("\tTamaño de línea: CLS = %d\n", CLS);
-            printf("\tNúmero de líneas en caché nivel 1: S1 = %d\n", S1);
-            printf("\tNúmero de líneas en caché nivel 2: S2 = %d\n", S2);
+            printf("\tTamaño de linea: CLS = %d\n", CLS);
+            printf("\tNumero de lineas en cache nivel 1: S1 = %d\n", S1);
+            printf("\tNumero de lineas en cache nivel 2: S2 = %d\n", S2);
             printf("\nTiempos y ciclos:\n");
-            printf("\tCiclos de ejecución totales = %1.10lf\n", ck);
+            printf("\tCiclos de ejecucion totales = %1.10lf\n", ck);
             printf("\tTiempo medio de acceso = %1.10lf ciclos\n", ck_medio);
         
             // Imprimimos el vector S y el S_medio
@@ -270,60 +416,19 @@
         
             // Liberamos la memoria asignada y acabamos
             _mm_free(A);
-            printf("\nMemoria liberada y programa terminado con éxito!\n");
+            printf("\nMemoria liberada y programa terminado con exito!\n");
             return EXIT_SUCCESS;
         }
-        
-        /**
-         * Funciones para medir tiempos de la librería aportada en el CV
-         * rutinas_clock.c
-         */
-        
-        /* Set *hi and *lo to the high and low order bits of the cycle counter.
-        Implementation requires assembly code to use the rdtsc instruction. */
-        void access_counter(unsigned *hi, unsigned *lo)
-        {
-            asm("rdtsc; movl %%edx,%0; movl %%eax,%1" /* Read cycle counter */
-                : "=r"(*hi), "=r"(*lo)                /* and move results to */
-                : /* No input */                      /* the two outputs */
-                : "%edx", "%eax");
-        }
-        
-        /* Record the current value of the cycle counter. */
-        void start_counter()
-        {
-            access_counter(&cyc_hi, &cyc_lo);
-        }
-        
-        /* Return the number of cycles since the last call to start_counter. */
-        double get_counter()
-        {
-            unsigned ncyc_hi, ncyc_lo;
-            unsigned hi, lo, borrow;
-            double result;
-        
-            /* Get cycle counter */
-            access_counter(&ncyc_hi, &ncyc_lo);
-        
-            /* Do double precision subtraction */
-            lo = ncyc_lo - cyc_lo;
-            borrow = lo > ncyc_lo;
-            hi = ncyc_hi - cyc_hi - borrow;
-            result = (double)hi * (1 << 30) * 4 + lo;
-            if (result < 0)
-            {
-                fprintf(stderr, "Error: counter returns neg value: %.0f\n", result);
-            }
-            return result;
-        }
+        /* Omitido código de medida de ciclos */
         \end{lstlisting}
-        \newpage
-        \large{Código del programa \texttt{mediana.c}}
+        
+        
+        \Large{\texttt{mediana.c}}
         \begin{lstlisting}
         /**
          * @author Pablo Landrove (@PabloLandro)
-         * @author Pablo Díaz (@derivada)
-         * @brief Práctica 1 Arquitectura de Computadores
+         * @author Pablo Diaz (@derivada)
+         * @brief Practica 1 Arquitectura de Computadores - Programa para calcular la mediana de los resultados
          * @date 2022-02-16
          *
          * NOTA: Compilar con las flags -O0 y -msse3
@@ -431,100 +536,61 @@
                 array[j + 1] = key;
             }
         }
-    \end{lstlisting}
-    \newpage
-    \twocolumn
-	\section{Metodología de las pruebas}
-	% Aquí meter como se hacen las pruebas (i, D, L, R...)
-	Para evitar realizar cada prueba manualmente introduciendo distintos argumentos por consola, hemos generado un script de instrucciones \texttt{bash} (\texttt{run\_tests.sh}) para realizar las pruebas y guardarlas en archivos de texto con un solo comando. Además en este script llamamos a otros programas como \testtt{mediana.c}, cuyo uso se explica más adelante.\par
-	
-	Tomamos 5 valores de D, varios menores que 8 (ya que con estos valores consultaremos varios elementos en una misma línea) y luego otros mayores hasta 100. Los valores de L son los indicados en el enunciado de la práctica. El valor de R se escoge automáticamente por el programa de C para cada par de valores de D y L, ya que debemos consultar el número de elementos tal que dada la separación D, accedemos a L líneas de caché distintas.\par
-	
-	Además para cada de los valores anteriormente mencionados, repetimos las pruebas i veces y se guardan en los archivos \texttt{resultsi.csv} junto con el número de ciclos total y el número medio de ciclos por acceso. Posteriormente escogemos la mediana del número de ciclos para cada par (D, L) y así evitar que los datos dependan fuertemente de la ejecución y la influencia de otros procesos. Después de realizar la mediana guardamos los datos en \texttt{results.csv}.\par
-	
-	\section{Características del ordenador}
-	% Aquí meter las características del CPU y la caché
-	Las características generales del equipo en el que se realizaron las pruebas son las siguientes:
-	
-	\begin{itemize}
-        \item OS: Ubuntu 20.04.4 LTS x86\_64 
-        \item Kernel: 5.13.0-35-generic 
-        \item Intel i5-8300H (4) @ 2.303GHz
-        \item Memoria RAM: 3925MiB
-    \end{itemize}
-    
-    Las características de la caché L1 (de datos, la de instrucciones es igual) de cada núcleo son las siguientes:
-    
-	\begin{itemize}
-        \item Tamaño: 128 KiB (131072 bytes)
-        \item Tamaño de línea: 64 bytes \textit{= CLS}
-        \item Número de líneas: 512 \textit{= S1}
-        \item Tipo: Asociativa por conjuntos, 8 líneas por conjunto, 64 conjuntos
-    \end{itemize}
-    
-    y las de la caché L2 son las siguientes: 
-    
-	\begin{itemize}
-        \item Tamaño: 1 MiB (1048576 bytes)
-        \item Tamaño de línea: 64 bytes \textit{= CLS}
-        \item Número de líneas: 4096 \textit{= S2}
-        \item Tipo: Asociativa por conjuntos, 8 líneas por conjunto, 64 conjuntos
-    \end{itemize}
-    
-    Como vemos, hemos obtenido los parámetros CLS, S1 y S2 que fueron usados en el programa a partir de esto. La información de la CPU fue obtenida mediante el comando \texttt{neofetch}, la información principal de la caché fue obtenida en la función \texttt{info\_cache} en el script bash adjunto y resumida en el archivo generado por este \texttt{cache\_info.txt}, por último, el tipo de la caché fue obtenido mediante el comando \texttt{hardinfo}.
-    
-	\section{Pruebas y resultados}
-	% Aquí meter las gráficas comentadas y lo que sacamos de ellas
-	Tras las ejecuciones explicadas anteriormente, los resultados obtenidos en \texttt{results.csv} se procesan en un script de \textsf{R} llamado \texttt{graficas.R}. En estas gráficas se intentaron relacionar los valores del número de líneas de caché consultadas \texttt{L}, el espacio entre elementos \texttt{D} y el número de ciclos medios en la ejecución del programa \textt{ck\_medio}.
-	
-    \begin{figure*}
-        \includegraphics{grafL}
-        \caption{Test}
-    \end{figure*}
+\end{lstlisting}
+\newpage
 
-	\section{Conclusión}
-    % Conclusión final
+\section{Gráficas obtenidas}
+
+A continuación presentamos las gráficas anteriores en  formato de una columna para que sean más fáciles de visualizar. \\
+
+\setcounter{figure}{0}   
+\label{graficas}
+	\begin{figure}[!ht]
+        \centering
+        \includegraphics[width=\linewidth]{grafica_agrup_D_1.png}
+        \caption{Relación de los ciclos de ejecución con D}
+            \label{Figura1}
+    \end{figure}
+	
+	\begin{figure}[!ht]
+        \centering
+        \includegraphics[width=\linewidth]{grafica_agrup_L_1.png}
+        \caption{Relación de los ciclos de ejecución con L}
+        \label{Figura2}
+    \end{figure}
     
-    % Por si hace falta meter cuadros
-	%El cuadro~\ref{tab:valora} muestra un ejemplo de cuadro.
-	
-	
-%------------------------------------------------
-	
-\section{Resultados}
-Se presentan resultados en tablas o en figuras de modo que todas las tablas y figuras tengan un formato similar. Si son datos que nosotros no hemos obtenido, sino que son sacados de libros, artículos o webs debemos indicar la fuente de que fueron obtenidos. Se presentan los resultados.
-	
-En los resultados debemos describir cómo hemos realizado los experimentos para que puedan ser reproducidos por terceros. Hay que comentar los resultados antes de pasar a la siguiente sección. 
-	
-\subsection{Ejemplo subsección}
-Esta sección puede estar dividida en varias subsecciones. 
-	
-	
-%------------------------------------------------
-	
-\section{Conclusiones}
-	
-El apartado de conclusiones explica qué problema ha sido tratado en el documento, qué fue lo que se hizo y cómo se trabajó. Será una especie de recordatorio de todo el documento.
-
-Se deberán ir desglosando las principales observaciones, conclusiones que podemos extraer y los problemas que se han ido encontrando al ir realizando nuestro trabajo.
-
-Además, este apartado es el adecuado para exponer cuales podrían ser posibles trabajos futuros que completen lo explicado en este trabajo. 
-
-%----------------------------------------------------------------------------------------
-%	Referencias
-%----------------------------------------------------------------------------------------
-	
-\begin{thebibliography}{99} % Bibliografía - alternativamente, se recomienda el uso de bibtex o biblatex
-		
-	\bibitem[1]{Intel:2005}
-    Uhlig, Rich, et al.
-	\newblock {\em Intel virtualization technology.}
-	\newblock Computer, vol. 38, no. 5, pp. 48--56, 2005.
-	\bibitem[2]{spec} Standard Performance Evaluation Corporation, 
-	\newblock \href{http://www.specbench.org}{http://www.specbench.org}, 	\newblock [online] última visita 20 de marzo de 2017.
-		
-\end{thebibliography}
-	
-	%----------------------------------------------------------------------------------------
-	
+    \begin{figure}[!ht]
+        \centering
+        \includegraphics[width=\linewidth]{grafica_3d.png}
+        \caption{Relación de los ciclos de ejecución con L y D}
+        \label{Figura3}
+    \end{figure}
+    
+    \begin{figure}[!ht]
+        \centering
+        \includegraphics[width=\linewidth]{O0_R0_grafica_agrup_L.png}
+        \caption{Relación de los ciclos de ejecución con L, array de índices no randomizado}
+        \label{Figura4}
+    \end{figure}
+    
+    \begin{figure}[!ht]
+        \centering
+        \includegraphics[width=\linewidth]{O0_R1_grafica_agrup_L.png}
+        \caption{Relación de los ciclos de ejecución con L, array de índices randomizado}
+        \label{Figura5}
+    \end{figure}
+    
+    \begin{figure}[!ht]
+        \centering
+        \includegraphics[width=\linewidth]{O0_R0_grafica_agrup_D.png}
+        \caption{Relación de los ciclos de ejecución con D, sin optimizaciones}
+        \label{Figura6}
+    \end{figure}
+    
+    \begin{figure}[!ht]
+        \centering
+        \includegraphics[width=\linewidth]{O3_R0_grafica_agrup_L.png}
+        \caption{Relación de los ciclos de ejecución con D, con optimizaciones}
+        \label{Figura7}
+    \end{figure}
 \end{document}

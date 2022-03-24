@@ -18,14 +18,14 @@ plotL = ggplot(data = datos, mapping = aes(x = D, y = ck_medio)) +
        y = "Ciclos de reloj por acceso",
        fill = "L") +
   theme_bw() +
-  theme(legend.title = element_text(size = 20),
-        legend.text = element_text(size=20),
+  theme(legend.title = element_text(size = 25),
+        legend.text = element_text(size=25),
         legend.key.size = unit(1, 'cm'),
         axis.title.x = element_text(size = 20),
         axis.title.y = element_text(size = 20),
-        axis.text.x = element_text(size = 10),
-        axis.text.y = element_text(size = 10),
-        title = element_text(size = 20))
+        axis.text.x = element_text(size = 30),
+        axis.text.y = element_text(size = 30),
+        title = element_text(size = 25))
 ggsave("grafica_agrup_L.png", plotL, width = 15, height = 10)
 plotL
 
@@ -37,14 +37,14 @@ plotD = ggplot(data = datos, mapping = aes(x = L, y = ck_medio)) +
        y = "Ciclos de reloj por acceso",
        fill = "D") +
   theme_bw() +
-  theme(legend.title = element_text(size = 20),
-        legend.text = element_text(size=20),
+  theme(legend.title = element_text(size = 25),
+        legend.text = element_text(size=25),
         legend.key.size = unit(1, 'cm'),
         axis.title.x = element_text(size = 20),
         axis.title.y = element_text(size = 20),
-        axis.text.x = element_text(size = 10),
-        axis.text.y = element_text(size = 10),
-        title = element_text(size = 20))
+        axis.text.x = element_text(size = 30),
+        axis.text.y = element_text(size = 30),
+        title = element_text(size = 25))
 ggsave("grafica_agrup_D.png", plotD, width = 15, height = 10)
 
 # Refrescar datos
