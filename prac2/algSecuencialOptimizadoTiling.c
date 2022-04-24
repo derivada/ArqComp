@@ -4,7 +4,8 @@
 #include <time.h>
 #include "utils.h"
 
-#define ALG_NAME "secOptUnroll"
+#define ALG_NAME "secOptTiling"
+#define BLOCK_SIZE 8
 FILE *outputFile;
 
 // Funciones de leer parámetros y cerrar archivo de salida
@@ -12,7 +13,7 @@ void leerParametros(int argc, const char *argv[]);
 void cerrarArchivoSalida(int status, void *args);
 
 // Algoritmo a usar
-int algSecOptUnroll(datos in);
+int algSecOptTiling(datos in);
 
 // Variables del experimento
 int N, semilla;
@@ -28,7 +29,7 @@ int main(int argc, const char *argv[])
     inicializacion(casoPrueba, N, semilla);
 
     // Ejecutamos el algoritmo midiendo tiempo
-    results = medirTiempoEjecucion(algSecOptUnroll, *casoPrueba);
+    results = medirTiempoEjecucion(algSecOptTiling, *casoPrueba);
 
     // Imprimimos los resultados
     if (DEBUG_MSG)
@@ -42,36 +43,42 @@ int main(int argc, const char *argv[])
     exit(EXIT_SUCCESS);
 }
 
-int algSecOptUnroll(datos in)
+int algSecOptTiling(datos in)
 {
     /**
      * OPTIMIZACIONES REALIZADAS
-     * 2. Unrolling del bucle de las k
+     * 3. Tiling en los bucles i y j
      */
-    for (int i = 0; i < N; i++)
-    { // N iteraciones
-        for (int j = 0; j < N; j++)
-        { // N iteraciones
-            // 72 accesos
-            in.d[i][j] += 2 * in.a[i][0] * (in.b[0][j] - in.c[0]);
-            in.d[i][j] += 2 * in.a[i][1] * (in.b[1][j] - in.c[1]);
-            in.d[i][j] += 2 * in.a[i][2] * (in.b[2][j] - in.c[2]);
-            in.d[i][j] += 2 * in.a[i][3] * (in.b[3][j] - in.c[3]);
-            in.d[i][j] += 2 * in.a[i][4] * (in.b[4][j] - in.c[4]);
-            in.d[i][j] += 2 * in.a[i][5] * (in.b[5][j] - in.c[5]);
-            in.d[i][j] += 2 * in.a[i][6] * (in.b[6][j] - in.c[6]);
-            in.d[i][j] += 2 * in.a[i][7] * (in.b[7][j] - in.c[7]);
+    int bi = 0, bj = 0, i, j, iLimit, jLimit;
+    for (; bi < N; bi += BLOCK_SIZE)
+    { // N / BLOCK_SIZE (div. entera) iteraciones
+        for (; bj < N; bj += BLOCK_SIZE)
+        { // N / BLOCK_SIZE (div. entera) iteraciones
+            iLimit = bi + BLOCK_SIZE;
+            if (iLimit > N)
+                iLimit = N;
+            for (i = bi; i < iLimit; i++)
+            { // BLOCK_SIZE iteraciones
+                jLimit = bj + BLOCK_SIZE;
+                if (jLimit > N)
+                    jLimit = N;
+                for (j = bj; j < jLimit; j++)
+                { // BLOCK_SIZE iteraciones
+                    for (int k = 0; k < 8; k++)
+                    {                                                          // 8 iteraciones
+                        in.d[i][j] += 2 * in.a[i][k] * (in.b[k][j] - in.c[k]); // 9 accesos
+                    }
+                }
+            }
         }
     }
-
     for (int i = 0; i < N; i++)
     {                                             // N iteraciones
         in.e[i] = in.d[in.ind[i]][in.ind[i]] / 2; // 5 accesos
         in.f += in.e[i];                          // 2 accesos
     }
-
     if (DEBUG_MSG)
-        printf("Resultado del algoritmo secuencial por unrolling: f = %4lf\n", in.f);
+        printf("Resultado del algoritmo secuencial por tiling: f = %4lf\n", in.f);
 
     // accesos = (9*8*N*N) + (N*5*2)    // Inicializamos el contador
     int accesos = N * (72 * N + 10);
