@@ -1,26 +1,47 @@
-# Primero compilamos con O0 para ejecutar los 2 primeros ejercicios
-gcc -Wall -O0 -o main main.c 
+# Compilamos cada uno de los programas
+gcc -Wall -O0 -o algSec algSecuencial.c utils.c
 if [ $? -ne 0 ]
 then
-    echo "Error al compilar main.c"
+    echo "Error al compilar algoritmo secuencial"
     exit 1
 fi
 
-rm salida1.txt salida2.txt
-echo "N,ck,ck_medios" > salida1.txt
-echo "N,ck,ck_medios" > salida2.txt
+gcc -Wall -O0 -o algSecOpt algSecuencialOptimizado.c utils.c
+if [ $? -ne 0 ]
+then
+    echo "Error al compilar algoritmo secuencial optimizado"
+    exit 1
+fi
 
+if [ -f salidaSec.txt ]
+then
+    rm salidaSec.txt
+fi
+
+if [ -f salidaSecOpt.txt ]
+then
+    rm salidaSecOpt.txt
+fi
+
+echo "N,ck,ck_medios" > salidaSec.txt
+echo "N,ck,ck_medios" > salidaSecOpt.txt
+
+# Ejecutamos cada programa 10 veces para cada valor de N
 valoresN=(250 500 750 1000 1500 2000 2550 3000)
-for i in {1..10}; do
+for i in {1..1}; do
 for N in ${valoresN[@]}; do  
-    ./main $N 1 salida1.txt # Algoritmo secuencial
-    ./main $N 2 salida2.txt # Algoritmo secuencial optimizado
+    # get random seed
+    SEED=$(($RANDOM))
+    ./algSec $N $SEED salidaSec.txt          # Algoritmo secuencial
+    ./algSecOpt $N $SEED salidaSecOpt.txt    # Algoritmo secuencial optimizado
 done
 done
 
-# order file by first column numerically
-sort -n -k 1 salida1.txt > salida1_order.txt
-sort -n -k 1 salida2.txt > salida2_order.txt
-rm salida1.txt salida2.txt
+# Ordenar archivo por primera columna numericamente
+sort -n -k 1 salidaSec.txt > salidaSec_order.txt
+sort -n -k 1 salidaSecOpt.txt > salidaSecOpt_order.txt
+mv salidaSec_order.txt salidaSec.txt
+mv salidaSecOpt_order.txt salidaSecOpt.txt
 
-rm main
+# Limpiamos ejecutables
+rm algSec algSecOpt
