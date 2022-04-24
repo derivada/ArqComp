@@ -1,19 +1,15 @@
-# En este script de R usando las librerías ggplot2 y plotly obtenemos las gráficas mostradas
-# en la memoria de la práctica
 library(ggplot2)
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # wd = carpeta contenedora del script (solo funciona en RSTUDIO)
 
-datosSec = read.table("salidaSec.txt", header = TRUE, sep = ",")
-datosSecOpt = read.table("salidaSecOpt.txt", header = TRUE, sep = ",")
+# Preparar datos
+datos = read.table("salida.txt", header = TRUE, sep = ",")
 
-# Agrupar datos D y L
-# Grafica D agrupado por L
-plot = ggplot(data = datos, mapping = aes(x = D, y = ck_medio)) +
-  geom_line(aes(color = L, group = L), lwd = 2) +
-  labs(title = "Comparación salto-ciclos",
-       x = "D (Salto en memoria entre posiciones del array)",
-       y = "Ciclos de reloj por acceso",
-       fill = "L") +
+# Grafica de tamaño-ciclos para cada algoritmo
+plot = ggplot(data = datos, mapping = aes(x = N, y = ck_medios)) +
+  geom_line(aes(color = alg, group = alg), lwd = 1) +
+  labs(title = "Comparación tamaño-ciclos",
+       x = "N (Tamaño del problema)",
+       y = "Ciclos de reloj por acceso") +
   theme_bw() +
   theme(legend.title = element_text(size = 25),
         legend.text = element_text(size=25),
@@ -23,7 +19,8 @@ plot = ggplot(data = datos, mapping = aes(x = D, y = ck_medio)) +
         axis.text.x = element_text(size = 30),
         axis.text.y = element_text(size = 30),
         title = element_text(size = 25))
-ggsave("grafica_comp.png", plotL, width = 15, height = 10)
+
+ggsave("grafica.png", plot, width = 15, height = 10)
 
 # Mostrar gráficas
 plot

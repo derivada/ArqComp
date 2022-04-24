@@ -1,17 +1,27 @@
 # Compilamos cada uno de los programas
-gcc -Wall -O0 -o algSec algSecuencial.c utils.c
+# create array arr of strings str1 str2 str3
+
+gcc -Wall -O0 -o algSecuencial algSecuencial.c utils.c
 if [ $? -ne 0 ]
 then
     echo "Error al compilar algoritmo secuencial"
     exit 1
 fi
 
-gcc -Wall -O0 -o algSecOpt algSecuencialOptimizado.c utils.c
+gcc -Wall -O0 -o algSecuencialOptimizadoOrden algSecuencialOptimizadoOrden.c utils.c
 if [ $? -ne 0 ]
 then
     echo "Error al compilar algoritmo secuencial optimizado"
     exit 1
 fi
+
+gcc -Wall -O0 -o algSecuencialOptimizadoUnrolling algSecuencialOptimizadoUnrolling.c utils.c
+if [ $? -ne 0 ]
+then
+    echo "Error al compilar algoritmo secuencial optimizado"
+    exit 1
+fi
+
 
 if [ -f salidaSec.txt ]
 then
@@ -23,25 +33,24 @@ then
     rm salidaSecOpt.txt
 fi
 
-echo "N,ck,ck_medios" > salidaSec.txt
-echo "N,ck,ck_medios" > salidaSecOpt.txt
+echo "N,alg,ck_medios" > salida.txt
 
 # Ejecutamos cada programa 10 veces para cada valor de N
 valoresN=(250 500 750 1000 1500 2000 2550 3000)
-for i in {1..1}; do
+for i in {1..10}; do
 for N in ${valoresN[@]}; do  
     # get random seed
     SEED=$(($RANDOM))
-    ./algSec $N $SEED salidaSec.txt          # Algoritmo secuencial
-    ./algSecOpt $N $SEED salidaSecOpt.txt    # Algoritmo secuencial optimizado
+    ./algSecuencial $N $SEED salida.txt          
+    ./algSecuencialOptimizadoOrden $N $SEED salida.txt    
+    ./algSecuencialOptimizadoUnrolling $N $SEED salida.txt   
 done
 done
 
-# Ordenar archivo por primera columna numericamente
-sort -n -k 1 salidaSec.txt > salidaSec_order.txt
-sort -n -k 1 salidaSecOpt.txt > salidaSecOpt_order.txt
-mv salidaSec_order.txt salidaSec.txt
-mv salidaSecOpt_order.txt salidaSecOpt.txt
+# Ordenar archivo por primera columna y después tercera numericamente
+sort -t, -k1,1n -k3,3n salida.txt > salidaOrd.txt
+
+mv salidaOrd.txt salida.txt
 
 # Limpiamos ejecutables
-rm algSec algSecOpt
+rm algSecuencial algSecuencialOptimizadoOrden algSecuencialOptimizadoUnrolling

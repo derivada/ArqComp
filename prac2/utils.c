@@ -57,7 +57,7 @@ void inicializacion(datos *in, int N, int semilla)
     }
 }
 
-void freeMyNiggaJerome(datos in, int N)
+void liberarMemoria(datos in, int N)
 {
     for (int i = 0; i < N; i++)
     {

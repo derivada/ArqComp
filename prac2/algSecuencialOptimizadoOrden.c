@@ -4,6 +4,7 @@
 #include <time.h>
 #include "utils.h"
 
+#define ALG_NAME "secOptOrden"
 FILE *outputFile;
 
 // Funciones de leer parámetros y cerrar archivo de salida
@@ -11,7 +12,7 @@ void leerParametros(int argc, const char *argv[]);
 void cerrarArchivoSalida(int status, void *args);
 
 // Algoritmo a usar
-int algoritmoSecuencialOptimizado(datos in);
+int algSecOptOrden(datos in);
 
 // Variables del experimento
 int N, semilla;
@@ -27,21 +28,21 @@ int main(int argc, const char *argv[])
     inicializacion(casoPrueba, N, semilla);
 
     // Ejecutamos el algoritmo midiendo tiempo
-    results = medirTiempoEjecucion(algoritmoSecuencialOptimizado, *casoPrueba);
+    results = medirTiempoEjecucion(algSecOptOrden, *casoPrueba);
 
     // Imprimimos los resultados
     if (DEBUG_MSG)
         printf("Tiempos: ck = %d\tck_medio = %4lf\n", results.ck, results.ck_medios);
 
     // Registramos los resultados
-    fprintf(outputFile, "%d,%d,%lf\n", N, results.ck, results.ck_medios);
+    fprintf(outputFile, "%d,%s,%lf\n", N, ALG_NAME, results.ck_medios);
 
     // Liberación de mi negro jerónimo
-    freeMyNiggaJerome(*casoPrueba, N);
+    liberarMemoria(*casoPrueba, N);
     exit(EXIT_SUCCESS);
 }
 
-int algoritmoSecuencialOptimizado(datos in)
+int algSecOptOrden(datos in)
 {
     /**
      * OPTIMIZACIONES REALIZADAS
@@ -66,7 +67,7 @@ int algoritmoSecuencialOptimizado(datos in)
     }
 
     if (DEBUG_MSG)
-        printf("Resultado del algoritmo secuencial optimizado: f = %4lf\n", in.f);
+        printf("Resultado del algoritmo secuencial optimizado por orden: f = %4lf\n", in.f);
 
     // accesos = (9*8*N*N) + (N*5*2)    // Inicializamos el contador
     int accesos = N * (72 * N + 10);
