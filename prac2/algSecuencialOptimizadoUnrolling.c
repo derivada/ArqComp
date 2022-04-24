@@ -30,12 +30,8 @@ int main(int argc, const char *argv[])
     // Ejecutamos el algoritmo midiendo tiempo
     results = medirTiempoEjecucion(algSecOptUnroll, *casoPrueba);
 
-    // Imprimimos los resultados
-    if (DEBUG_MSG)
-        printf("Tiempos: ck = %d\tck_medio = %4lf\n", results.ck, results.ck_medios);
-
     // Registramos los resultados
-    fprintf(outputFile, "%d,%s,%lf\n", N, ALG_NAME, results.ck_medios);
+    fprintf(outputFile, "%d,%s,%d,%lf\n", N, ALG_NAME, results.ck, results.ck_medios);
 
     // Liberación de mi negro jerónimo
     liberarMemoria(*casoPrueba, N);

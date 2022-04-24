@@ -4,8 +4,7 @@
 #include <time.h>
 #include "utils.h"
 
-#define ALG_NAME "secOptTiling"
-#define BLOCK_SIZE 8
+#define ALG_NAME "secOptTiling_"
 FILE *outputFile;
 
 // Funciones de leer parámetros y cerrar archivo de salida
@@ -16,7 +15,7 @@ void cerrarArchivoSalida(int status, void *args);
 int algSecOptTiling(datos in);
 
 // Variables del experimento
-int N, semilla;
+int N, semilla, blockSize;
 
 int main(int argc, const char *argv[])
 {
@@ -31,12 +30,9 @@ int main(int argc, const char *argv[])
     // Ejecutamos el algoritmo midiendo tiempo
     results = medirTiempoEjecucion(algSecOptTiling, *casoPrueba);
 
-    // Imprimimos los resultados
-    if (DEBUG_MSG)
-        printf("Tiempos: ck = %d\tck_medio = %4lf\n", results.ck, results.ck_medios);
-
     // Registramos los resultados
-    fprintf(outputFile, "%d,%s,%lf\n", N, ALG_NAME, results.ck_medios);
+    fprintf(outputFile, "%d,%s%d,%d,%lf\n", 
+    N, ALG_NAME, blockSize, results.ck, results.ck_medios);
 
     // Liberación de mi negro jerónimo
     liberarMemoria(*casoPrueba, N);
@@ -49,21 +45,20 @@ int algSecOptTiling(datos in)
      * OPTIMIZACIONES REALIZADAS
      * 3. Tiling en los bucles i y j
      */
-    int bi = 0, bj = 0, i, j, iLimit, jLimit;
-    for (; bi < N; bi += BLOCK_SIZE)
-    { // N / BLOCK_SIZE (div. entera) iteraciones
-        for (; bj < N; bj += BLOCK_SIZE)
-        { // N / BLOCK_SIZE (div. entera) iteraciones
-            iLimit = bi + BLOCK_SIZE;
+    for (int bi = 0; bi < N; bi += blockSize)
+    { // N / blockSize (div. entera) iteraciones
+        for (int bj = 0; bj < N; bj += blockSize)
+        { // N / blockSize (div. entera) iteraciones
+            int iLimit = bi + blockSize;
             if (iLimit > N)
                 iLimit = N;
-            for (i = bi; i < iLimit; i++)
-            { // BLOCK_SIZE iteraciones
-                jLimit = bj + BLOCK_SIZE;
+            for (int i = bi; i < iLimit; i++)
+            { // blockSize iteraciones
+                int jLimit = bj + blockSize;
                 if (jLimit > N)
                     jLimit = N;
-                for (j = bj; j < jLimit; j++)
-                { // BLOCK_SIZE iteraciones
+                for (int j = bj; j < jLimit; j++)
+                { // blockSize iteraciones
                     for (int k = 0; k < 8; k++)
                     {                                                          // 8 iteraciones
                         in.d[i][j] += 2 * in.a[i][k] * (in.b[k][j] - in.c[k]); // 9 accesos
@@ -78,7 +73,8 @@ int algSecOptTiling(datos in)
         in.f += in.e[i];                          // 2 accesos
     }
     if (DEBUG_MSG)
-        printf("Resultado del algoritmo secuencial por tiling: f = %4lf\n", in.f);
+        printf("Resultado del algoritmo secuencial por tiling (bs = %d): f = %4lf\n", 
+        blockSize, in.f);
 
     // accesos = (9*8*N*N) + (N*5*2)    // Inicializamos el contador
     int accesos = N * (72 * N + 10);
@@ -87,17 +83,18 @@ int algSecOptTiling(datos in)
 
 void leerParametros(int argc, const char *argv[])
 {
-    if (argc != 4)
+    if (argc != 5)
     {
-        printf("Uso correcto: ./main N SEM_ALEAT OUTPUT_FILE\n");
+        printf("Uso correcto: ./main BLOCK_SIZE N SEM_ALEAT OUTPUT_FILE \n");
         exit(EXIT_FAILURE);
     }
     else
     {
-        // N: tamaño de la operación
-        N = atoi(argv[1]);
-        semilla = atoi(argv[2]);
-        if ((outputFile = fopen(argv[3], "a")) == NULL) // Abrimos el archivo de salida
+        blockSize = atoi(argv[1]);
+        N = atoi(argv[2]);
+        semilla = atoi(argv[3]);
+
+        if ((outputFile = fopen(argv[4], "a")) == NULL) // Abrimos el archivo de salida
         {
             printf("Error al abrir el archivo de salida\n");
             exit(EXIT_FAILURE);

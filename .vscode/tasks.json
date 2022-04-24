@@ -11,7 +11,8 @@
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}",
                 "-O0",
-                "-msse3"
+                "-msse3",
+                "utils.c"
             ],
             "options": {
                 "cwd": "${fileDirname}"

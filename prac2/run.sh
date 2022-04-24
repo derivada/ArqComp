@@ -34,20 +34,29 @@ if [ -f salida.txt ]
 then
     rm salida.txt
 fi
-echo "N,alg,ck_medios" > salida.txt
+echo "N,alg,ck,ck_medios" > salida.txt
 
 
 # Ejecutamos cada programa 10 veces para cada valor de N
-valoresN=(250 500 750 1000 1500 2000 2550 3000)
-for i in {1..1}; do
-for N in ${valoresN[@]}; do  
-    # get random seed
-    SEED=$(($RANDOM))
-    ./algSecuencial.o $N $SEED salida.txt          
-    ./algSecuencialOptimizadoOrden.o $N $SEED salida.txt    
-    ./algSecuencialOptimizadoUnrolling.o $N $SEED salida.txt   
-    ./algSecuencialOptimizadoTiling.o $N $SEED salida.txt   
-done
+valoresN=(10 500 750 1000 1500 2000 2550 3000)
+MAX_TESTS=10
+count=0
+# loop MAX_TESTS times
+while [ $count -lt $MAX_TESTS ]; do
+    for N in ${valoresN[@]}; do  
+        # get random seed
+        SEED=$(($RANDOM))
+        ./algSecuencial.o $N $SEED salida.txt          
+        ./algSecuencialOptimizadoOrden.o $N $SEED salida.txt    
+        ./algSecuencialOptimizadoUnrolling.o $N $SEED salida.txt   
+        ./algSecuencialOptimizadoTiling.o 2 $N $SEED salida.txt
+        ./algSecuencialOptimizadoTiling.o 4 $N $SEED salida.txt
+        ./algSecuencialOptimizadoTiling.o 8 $N $SEED salida.txt
+        ./algSecuencialOptimizadoTiling.o 16 $N $SEED salida.txt   
+     
+    done
+    (( count++ ))
+    echo "Tests done ($count / $MAX_TESTS)"
 done
 
 # Ordenamos el archivo de salida por primera columna y después tercera numericamente

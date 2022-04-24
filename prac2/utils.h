@@ -1,7 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#define DEBUG_MSG 1
+#define DEBUG_MSG 0
 
 typedef struct
 {
