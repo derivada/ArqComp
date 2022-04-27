@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}",
-            "args": ["10", "1", "salida.txt"],
+            "args": ["1024", "1", "salida.txt"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],

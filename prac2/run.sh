@@ -43,24 +43,31 @@ then
     exit 1
 fi
 
+gcc -Wall -O0 -o algOMP.o algOMP.c utils.c -fopenmp
+if [ $? -ne 0 ]
+then
+    echo "Error al compilar algoritmo de OMP"
+    exit 1
+fi
+
 # Reseteamos el archivo de salida
 if [ -f salida.txt ]
 then
     rm salida.txt
 fi
-echo "N,alg,ck,ck_medios" > salida.txt
+echo "N,alg,ck,ck_medios,t_us" > salida.txt
 
 
 # Ejecutamos cada programa 10 veces para cada valor de N
-valoresN=(1024)
-MAX_TESTS=10
+valoresN=(8 64 1024 2048 4096)
+MAX_TESTS=5
 count=0
 # loop MAX_TESTS times
 while [ $count -lt $MAX_TESTS ]; do
     for N in ${valoresN[@]}; do  
         # get random seed
         SEED=$(($RANDOM))
-        # ./algSecuencial.o $N $SEED salida.txt          
+        ./algSecuencial.o $N $SEED salida.txt          
         ./algSecuencialOptimizadoOrden.o $N $SEED salida.txt    
         ./algSecuencialOptimizadoUnrollingv1.o $N $SEED salida.txt
         ./algSecuencialOptimizadoUnrollingv2.o $N $SEED salida.txt   
@@ -69,6 +76,7 @@ while [ $count -lt $MAX_TESTS ]; do
         # ./algSecuencialOptimizadoTiling.o 8 $N $SEED salida.txt
         # ./algSecuencialOptimizadoTiling.o 16 $N $SEED salida.txt   
         ./algAVX2.o $N $SEED salida.txt
+        ./algOMP.o $N $SEED salida.txt
     done
     (( count++ ))
     echo "Tests done ($count / $MAX_TESTS)"

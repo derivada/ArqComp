@@ -14,6 +14,7 @@ typedef struct
     int ck;
     int accesos;
     double ck_medios;
+    double microsegundos;
 } tiempos;
 
 // Funciones de inicializacion y liberación de memoria

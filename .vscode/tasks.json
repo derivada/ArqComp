@@ -11,7 +11,7 @@
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}",
                 "-O0",
-                "-msse3",
+                "-mavx2",
                 "utils.c"
             ],
             "options": {

@@ -12,7 +12,7 @@ void leerParametros(int argc, const char *argv[]);
 void cerrarArchivoSalida(int status, void *args);
 
 // Algoritmo a usar
-int algoritmoAVX2(datos in);
+int algoritmoSecuencial(datos in);
 
 // Variables del experimento
 int N, semilla;
@@ -28,10 +28,10 @@ int main(int argc, const char *argv[])
     inicializacion(casoPrueba, N, semilla);
 
     // Ejecutamos el algoritmo midiendo tiempo
-    results = medirTiempoEjecucion(algoritmoAVX2, *casoPrueba);
+    results = medirTiempoEjecucion(algoritmoSecuencial, *casoPrueba);
 
     // Registramos los resultados
-    fprintf(outputFile, "%d,%s,%d,%lf\n", N, ALG_NAME, results.ck, results.ck_medios);
+    fprintf(outputFile, "%d,%s,%d,%lf,%lf\n", N, ALG_NAME, results.ck, results.ck_medios, results.microsegundos);
 
     // Liberación de mi negro jerónimo
     liberarMemoria(*casoPrueba, N);
@@ -39,7 +39,7 @@ int main(int argc, const char *argv[])
 }
 
 
-int algoritmoAVX2(datos in)
+int algoritmoSecuencial(datos in)
 {
     for (int i = 0; i < N; i++)                                        // N iteraciones
         for (int j = 0; j < N; j++)                                    // N iteraciones

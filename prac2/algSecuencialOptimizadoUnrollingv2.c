@@ -31,7 +31,7 @@ int main(int argc, const char *argv[])
     results = medirTiempoEjecucion(algSecOptUnroll2, *casoPrueba);
 
     // Registramos los resultados
-    fprintf(outputFile, "%d,%s,%d,%lf\n", N, ALG_NAME, results.ck, results.ck_medios);
+    fprintf(outputFile, "%d,%s,%d,%lf,%lf\n", N, ALG_NAME, results.ck, results.ck_medios, results.microsegundos);
 
     // Liberación de mi negro jerónimo
     liberarMemoria(*casoPrueba, N);
@@ -111,7 +111,7 @@ int algSecOptUnroll2(datos in)
     }
 
     if (DEBUG_MSG)
-        printf("Resultado del algoritmo secuencial por unrolling: f = %4lf\n", in.f);
+        printf("Resultado del algoritmo secuencial por unrolling (v2): f = %4lf\n", in.f);
 
     // accesos = (9*8*N*N) + (N*5*2)    // Inicializamos el contador
     int accesos = N * (72 * N + 10);

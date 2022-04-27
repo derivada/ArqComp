@@ -4,12 +4,12 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # wd = carpeta conte
 # Preparar datos
 datos = read.table("salida.txt", header = TRUE, sep = ",")
 # Mediana de todas las observaciones
-datos <- aggregate( ck ~ N + alg, data = datos, median)
+datos <- aggregate( t_us ~ N + alg, data = datos, median)
 
 # Grafica de tamaño-ciclos totales para cada algoritmo
-plot = ggplot(data = datos, mapping = aes(x = N, y = ck)) +
+plot = ggplot(data = datos, mapping = aes(x = N, y = t_us)) +
   geom_line(aes(color = alg, group = alg), lwd = 1) +
-  labs(title = "Comparación tamaño - ciclos totales",
+  labs(title = "Comparación tamaño - microsegundos",
        x = "N (Tamaño del problema)",
        y = "Ciclos de reloj por acceso") +
   theme_bw() +

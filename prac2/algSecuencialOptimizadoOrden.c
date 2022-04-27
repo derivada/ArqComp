@@ -31,7 +31,7 @@ int main(int argc, const char *argv[])
     results = medirTiempoEjecucion(algSecOptOrden, *casoPrueba);
 
     // Registramos los resultados
-    fprintf(outputFile, "%d,%s,%d,%lf\n", N, ALG_NAME, results.ck, results.ck_medios);
+    fprintf(outputFile, "%d,%s,%d,%lf,%lf\n", N, ALG_NAME, results.ck, results.ck_medios, results.microsegundos);
 
     // Liberación de mi negro jerónimo
     liberarMemoria(*casoPrueba, N);
