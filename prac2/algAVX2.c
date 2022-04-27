@@ -2,9 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <immintrin.h>
 #include "utils.h"
 
-#define ALG_NAME "secOptUnroll"
+#define ALG_NAME "algAVX2"
 FILE *outputFile;
 
 // Funciones de leer parámetros y cerrar archivo de salida
@@ -12,7 +13,7 @@ void leerParametros(int argc, const char *argv[]);
 void cerrarArchivoSalida(int status, void *args);
 
 // Algoritmo a usar
-int algSecOptUnroll(datos in);
+int algoritmoAVX2(datos in);
 
 // Variables del experimento
 int N, semilla;
@@ -21,14 +22,20 @@ int main(int argc, const char *argv[])
 {
     srand(time(NULL));
     leerParametros(argc, argv);
+    if (N % 4)
+    {
+        printf("ERROR EN AVX: No implementado aún para N no divisible entre 4\n");
+        exit(EXIT_FAILURE);
+    }
+
     datos *casoPrueba = (datos *)malloc(sizeof(datos));
     tiempos results;
 
-    // Inicializamos y aoques de buclesrueba, N, semilla);
+    // Inicializamos y aleatoriazamos el caso de prueba
     inicializacion(casoPrueba, N, semilla);
 
     // Ejecutamos el algoritmo midiendo tiempo
-    results = medirTiempoEjecucion(algSecOptUnroll, *casoPrueba);
+    results = medirTiempoEjecucion(algoritmoAVX2, *casoPrueba);
 
     // Registramos los resultados
     fprintf(outputFile, "%d,%s,%d,%lf\n", N, ALG_NAME, results.ck, results.ck_medios);
@@ -38,36 +45,44 @@ int main(int argc, const char *argv[])
     exit(EXIT_SUCCESS);
 }
 
-int algSecOptUnroll(datos in)
+int algoritmoAVX2(datos in)
 {
-    /**
-     * OPTIMIZACIONES REALIZADAS
-     * 2. Unrolling del bucle de las k
-     */
+    __m256d scalar2 = _mm256_set1_pd(2);
     for (int i = 0; i < N; i++)
-    { // N iteraciones
-        for (int j = 0; j < N; j++)
-        { // N iteraciones
-            // 72 accesos
-            in.d[i][j] += 2 * in.a[i][0] * (in.b[0][j] - in.c[0]);
-            in.d[i][j] += 2 * in.a[i][1] * (in.b[1][j] - in.c[1]);
-            in.d[i][j] += 2 * in.a[i][2] * (in.b[2][j] - in.c[2]);
-            in.d[i][j] += 2 * in.a[i][3] * (in.b[3][j] - in.c[3]);
-            in.d[i][j] += 2 * in.a[i][4] * (in.b[4][j] - in.c[4]);
-            in.d[i][j] += 2 * in.a[i][5] * (in.b[5][j] - in.c[5]);
-            in.d[i][j] += 2 * in.a[i][6] * (in.b[6][j] - in.c[6]);
-            in.d[i][j] += 2 * in.a[i][7] * (in.b[7][j] - in.c[7]);
+    {
+        // in.a[i][k] * 2
+        __m256d a0 = _mm256_load_pd(&in.a[i][0]);
+        __m256d a4 = _mm256_load_pd(&in.a[i][4]);
+        a0 = _mm256_mul_pd(a0, scalar2);
+        a4 = _mm256_mul_pd(a4, scalar2);
+
+        for (int j = 0; j < N / 4; j += 4)
+        {
+            __m256d b0 = _mm256_load_pd(&in.b[0][j]);
+            __m256d b4 = _mm256_load_pd(&in.b[4][j]);
+            __m256d c0 = _mm256_load_pd(&in.c[0]);
+            __m256d c4 = _mm256_load_pd(&in.c[4]);
+            // in.d[i][j] += 2 * in.a[i][k] * (in.b[k][j] - in.c[k]);
+            __m256d d = _mm256_add_pd(
+                _mm256_mul_pd(a0, _mm256_sub_pd(b0, c0)),
+                _mm256_mul_pd(a4, _mm256_sub_pd(b4, c4)));
+
+            // Reducción y guardado en d
+            __m256d sum = _mm256_hadd_pd(d, d);
+            __m128d sum_high = _mm256_extractf128_pd(sum, 1);
+            __m128d result = _mm_add_pd(sum_high, _mm256_castpd256_pd128(sum));
+            in.d[i][j] = ((double*) &result)[0];
         }
     }
 
     for (int i = 0; i < N; i++)
-    {                                             // N iteraciones
-        in.e[i] = in.d[in.ind[i]][in.ind[i]] / 2; // 5 accesos
-        in.f += in.e[i];                          // 2 accesos
+    {
+        in.e[i] = in.d[in.ind[i]][in.ind[i]] / 2;
+        in.f += in.e[i];
     }
 
     if (DEBUG_MSG)
-        printf("Resultado del algoritmo secuencial por unrolling: f = %4lf\n", in.f);
+        printf("Resultado del algoritmo secuencial: f = %4lf\n", in.f);
 
     // accesos = (9*8*N*N) + (N*5*2)    // Inicializamos el contador
     int accesos = N * (72 * N + 10);

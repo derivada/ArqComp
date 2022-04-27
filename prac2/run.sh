@@ -15,10 +15,17 @@ then
     exit 1
 fi
 
-gcc -Wall -O0 -o algSecuencialOptimizadoUnrolling.o algSecuencialOptimizadoUnrolling.c utils.c
+gcc -Wall -O0 -o algSecuencialOptimizadoUnrollingv1.o algSecuencialOptimizadoUnrollingv1.c utils.c
 if [ $? -ne 0 ]
 then
-    echo "Error al compilar algoritmo secuencial optimizado por unrolling"
+    echo "Error al compilar algoritmo secuencial optimizado por unrolling v1"
+    exit 1
+fi
+
+gcc -Wall -O0 -o algSecuencialOptimizadoUnrollingv2.o algSecuencialOptimizadoUnrollingv2.c utils.c
+if [ $? -ne 0 ]
+then
+    echo "Error al compilar algoritmo secuencial optimizado por unrolling v2"
     exit 1
 fi
 
@@ -26,6 +33,13 @@ gcc -Wall -O0 -o algSecuencialOptimizadoTiling.o algSecuencialOptimizadoTiling.c
 if [ $? -ne 0 ]
 then
     echo "Error al compilar algoritmo secuencial optimizado por tiling"
+    exit 1
+fi
+
+gcc -Wall -O0 -o algAVX2.o algAVX2.c utils.c -mavx2
+if [ $? -ne 0 ]
+then
+    echo "Error al compilar algoritmo de AVX2"
     exit 1
 fi
 
@@ -38,7 +52,7 @@ echo "N,alg,ck,ck_medios" > salida.txt
 
 
 # Ejecutamos cada programa 10 veces para cada valor de N
-valoresN=(10 500 750 1000 1500 2000 2550 3000)
+valoresN=(1024)
 MAX_TESTS=10
 count=0
 # loop MAX_TESTS times
@@ -46,14 +60,15 @@ while [ $count -lt $MAX_TESTS ]; do
     for N in ${valoresN[@]}; do  
         # get random seed
         SEED=$(($RANDOM))
-        ./algSecuencial.o $N $SEED salida.txt          
+        # ./algSecuencial.o $N $SEED salida.txt          
         ./algSecuencialOptimizadoOrden.o $N $SEED salida.txt    
-        ./algSecuencialOptimizadoUnrolling.o $N $SEED salida.txt   
-        ./algSecuencialOptimizadoTiling.o 2 $N $SEED salida.txt
+        ./algSecuencialOptimizadoUnrollingv1.o $N $SEED salida.txt
+        ./algSecuencialOptimizadoUnrollingv2.o $N $SEED salida.txt   
+        # ./algSecuencialOptimizadoTiling.o 2 $N $SEED salida.txt
         ./algSecuencialOptimizadoTiling.o 4 $N $SEED salida.txt
-        ./algSecuencialOptimizadoTiling.o 8 $N $SEED salida.txt
-        ./algSecuencialOptimizadoTiling.o 16 $N $SEED salida.txt   
-     
+        # ./algSecuencialOptimizadoTiling.o 8 $N $SEED salida.txt
+        # ./algSecuencialOptimizadoTiling.o 16 $N $SEED salida.txt   
+        ./algAVX2.o $N $SEED salida.txt
     done
     (( count++ ))
     echo "Tests done ($count / $MAX_TESTS)"

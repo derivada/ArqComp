@@ -57,6 +57,54 @@ void inicializacion(datos *in, int N, int semilla)
     }
 }
 
+void inicializacionAVX(datos *in, int N, int semilla)
+{
+    srand(semilla);
+    in->a = (double **)malloc(N * sizeof(double *));
+    in->b = (double **)malloc(8 * sizeof(double *));
+    if(8 *sizeof(double) % 32 !=  0) {
+        printf("MAL ALINEAMIENTO\n");
+        exit(EXIT_FAILURE);
+    }
+    in->c = (double *)aligned_alloc(32, 8 * sizeof(double));
+    in->d = (double **)malloc(N * sizeof(double *));
+    in->e = (double *)aligned_alloc(32, N * sizeof(double));
+    in->ind = (int *)aligned_alloc(32, N * sizeof(int));
+    for (int i = 0; i < N; i++)
+    {
+        in->a[i] = (double *)aligned_alloc(32, sizeof(double) * 8);
+        if (i < 8)
+        {
+            in->b[i] = (double *)aligned_alloc(32, sizeof(double) * N);
+        }
+        (in->d)[i] = (double *)aligned_alloc(32, sizeof(double) * N);
+        memset(in->d[i], 0, N * sizeof(double));
+    }
+
+    memset(in->e, 0, N * sizeof(double));
+    in->f = 0;
+
+   for (int i = 0; i < N; i++)
+    {
+        in->ind[i] = i;
+        if (i < 8)
+            in->c[i] = (double)rand() / RAND_MAX * 2.0 - 1.0; // Double en el rango (-1.0, 1.0)
+        for (int j = 0; j < 8; j++)
+        {
+            in->a[i][j] = (double)rand() / RAND_MAX * 2.0 - 1.0; // Double en el rango (-1.0, 1.0)
+            in->b[j][i] = (double)rand() / RAND_MAX * 2.0 - 1.0; // Double en el rango (-1.0, 1.0)
+        }
+    }
+    // Shuffle
+    for (int i = N - 1; i >= 1; i--)
+    {
+        int j = rand() % (i + 1);
+        double temp = *(in->a[i]);
+        *(in->a[i]) = *(in->a[j]);
+        *(in->a[j]) = temp;
+    }
+}
+
 void liberarMemoria(datos in, int N)
 {
     for (int i = 0; i < N; i++)
