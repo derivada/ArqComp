@@ -66,19 +66,18 @@ int algoritmoAVX2(datos in)
         __m256d a4 = _mm256_load_pd(&in.a[i][4]);
         a0 = _mm256_mul_pd(a0, scalar2);
         a4 = _mm256_mul_pd(a4, scalar2);
-        for (int j = 0; j < N; j++)
+        for (int j = 0; j < N / 4; j += 4)
         {
-
+            int a = j + 1;
+            int b = j + 2;
+            int c = j + 3;
             __m256d b0 = _mm256_set_pd(in.b[3][j], in.b[2][j], in.b[1][j], in.b[0][j]);
             __m256d b4 = _mm256_set_pd(in.b[7][j], in.b[6][j], in.b[5][j], in.b[4][j]);
 
-            __m256d sub0 = _mm256_sub_pd(b0, c0);
-            __m256d sub4 = _mm256_sub_pd(b4, c4);
-
             // in.d[i][j] += 2 * in.a[i][k] * (in.b[k][j] - in.c[k]);
             __m256d d = _mm256_add_pd(
-                _mm256_mul_pd(a0, sub0),
-                _mm256_mul_pd(a4, sub4));
+                _mm256_mul_pd(a0, _mm256_sub_pd(b0, c0)),
+                _mm256_mul_pd(a4, _mm256_sub_pd(b4, c4)));
 
             // Reducción y guardado en d
             __m256d sum = _mm256_hadd_pd(d, d);

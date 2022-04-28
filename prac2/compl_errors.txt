@@ -1,9 +1,0 @@
-algSecuencialOptimizadoTiling.c: In function ‘algSecOptTiling’:
-algSecuencialOptimizadoTiling.c:57:22: warning: implicit declaration of function ‘min’; did you mean ‘main’? [-Wimplicit-function-declaration]
-   57 |             iLimit = min(N, bi + BLOCK_SIZE);
-      |                      ^~~
-      |                      main
-/usr/bin/ld: /tmp/ccceKkay.o: in function `algSecOptTiling':
-algSecuencialOptimizadoTiling.c:(.text+0x155): undefined reference to `min'
-/usr/bin/ld: algSecuencialOptimizadoTiling.c:(.text+0x17d): undefined reference to `min'
-collect2: error: ld returned 1 exit status

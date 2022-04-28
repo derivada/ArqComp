@@ -7,17 +7,13 @@
 
 struct timespec start, stop;
 
-
-/// do something
-
-
 tiempos medirTiempoEjecucion (int (*funcion)(datos), datos data){
     tiempos tiempos;
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
+    clock_gettime(CLOCK_REALTIME, &start);
     start_counter();
     tiempos.accesos = (*funcion)(data);
     tiempos.ck = get_counter();
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &stop);
+    clock_gettime(CLOCK_REALTIME, &stop);
     tiempos.microsegundos = (stop.tv_sec - start.tv_sec) * 1e6 + (stop.tv_nsec - start.tv_nsec) / 1e3;
     tiempos.ck_medios = ((double)tiempos.ck / tiempos.accesos);
     return tiempos;

@@ -59,7 +59,7 @@ echo "N,alg,ck,ck_medios,t_us" > salida.txt
 
 
 # Ejecutamos cada programa 10 veces para cada valor de N
-valoresN=(8 64 1024 2048 4096)
+valoresN=(32 128 512 2048)
 MAX_TESTS=5
 count=0
 # loop MAX_TESTS times
@@ -68,11 +68,11 @@ while [ $count -lt $MAX_TESTS ]; do
         # get random seed
         SEED=$(($RANDOM))
         ./algSecuencial.o $N $SEED salida.txt          
-        ./algSecuencialOptimizadoOrden.o $N $SEED salida.txt    
-        ./algSecuencialOptimizadoUnrollingv1.o $N $SEED salida.txt
+        #./algSecuencialOptimizadoOrden.o $N $SEED salida.txt    
+        # ./algSecuencialOptimizadoUnrollingv1.o $N $SEED salida.txt
         ./algSecuencialOptimizadoUnrollingv2.o $N $SEED salida.txt   
         # ./algSecuencialOptimizadoTiling.o 2 $N $SEED salida.txt
-        ./algSecuencialOptimizadoTiling.o 4 $N $SEED salida.txt
+        #./algSecuencialOptimizadoTiling.o 4 $N $SEED salida.txt
         # ./algSecuencialOptimizadoTiling.o 8 $N $SEED salida.txt
         # ./algSecuencialOptimizadoTiling.o 16 $N $SEED salida.txt   
         ./algAVX2.o $N $SEED salida.txt
