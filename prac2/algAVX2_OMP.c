@@ -3,9 +3,10 @@
 #include <string.h>
 #include <time.h>
 #include <immintrin.h>
+#include <omp.h>
 #include "utils.h"
 
-#define ALG_NAME "algAVX2"
+#define ALG_NAME "algAVX2_OMP_"
 FILE *outputFile;
 
 // Funciones de leer parámetros y cerrar archivo de salida
@@ -13,15 +14,16 @@ void leerParametros(int argc, const char *argv[]);
 void cerrarArchivoSalida(int status, void *args);
 
 // Algoritmo a usar
-int algoritmoAVX2(datos in);
+int algoritmoAVX2_OMP(datos in);
 
 // Variables del experimento
-int N, semilla;
+int N, semilla, numThreads;
 
 int main(int argc, const char *argv[])
 {
     srand(time(NULL));
     leerParametros(argc, argv);
+    omp_set_num_threads(numThreads);
 
     datos *casoPrueba = (datos *)malloc(sizeof(datos));
     tiempos results;
@@ -30,10 +32,10 @@ int main(int argc, const char *argv[])
     inicializacionAVX(casoPrueba, N, semilla);
 
     // Ejecutamos el algoritmo midiendo tiempo
-    results = medirTiempoEjecucion(algoritmoAVX2, *casoPrueba);
+    results = medirTiempoEjecucion(algoritmoAVX2_OMP, *casoPrueba);
 
     // Registramos los resultados
-    fprintf(outputFile, "%d,%s,%d,%lf,%lf\n", N, ALG_NAME, results.ck, results.ck_medios, results.microsegundos);
+    fprintf(outputFile, "%d,%s%d,%d,%lf,%lf\n", N, ALG_NAME, numThreads, results.ck, results.ck_medios, results.microsegundos);
 
     // Liberación de mi negro jerónimo
     liberarMemoria(*casoPrueba, N);
@@ -49,7 +51,7 @@ void cargarB(datos in)
     }
 }
 
-int algoritmoAVX2(datos in)
+int algoritmoAVX2_OMP(datos in)
 {
     __m256d scalar2 = _mm256_set1_pd(2);
     __m256d c0 = _mm256_load_pd(&in.c[0]);
@@ -60,6 +62,7 @@ int algoritmoAVX2(datos in)
     {
         N = N + (4 - N % 4);
     }
+#pragma omp parallel for
     for (int i = 0; i < N; i++)
     {
         // in.a[i][k] * 2
@@ -135,9 +138,12 @@ int algoritmoAVX2(datos in)
         printf("%10lf\n", in.d[i][innerN - 1]);
     }
     */
+   
+#pragma omp parallel for
     for (int i = 0; i < innerN; i++)
     {
         in.e[i] = in.d[in.ind[i]][in.ind[i]] / 2;
+#pragma omp atomic
         in.f += in.e[i];
     }
 
@@ -151,17 +157,18 @@ int algoritmoAVX2(datos in)
 
 void leerParametros(int argc, const char *argv[])
 {
-    if (argc != 4)
+    if (argc != 5)
     {
-        printf("Uso correcto: ./main N SEM_ALEAT OUTPUT_FILE\n");
+        printf("Uso correcto: ./main NUM_THREADS N SEM_ALEAT OUTPUT_FILE\n");
         exit(EXIT_FAILURE);
     }
     else
     {
         // N: tamaño de la operación
-        N = atoi(argv[1]);
-        semilla = atoi(argv[2]);
-        if ((outputFile = fopen(argv[3], "a")) == NULL) // Abrimos el archivo de salida
+        numThreads = atoi(argv[1]);
+        N = atoi(argv[2]);
+        semilla = atoi(argv[3]);
+        if ((outputFile = fopen(argv[4], "a")) == NULL) // Abrimos el archivo de salida
         {
             printf("Error al abrir el archivo de salida\n");
             exit(EXIT_FAILURE);

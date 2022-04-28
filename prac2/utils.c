@@ -66,6 +66,10 @@ void inicializacion(datos *in, int N, int semilla)
 void inicializacionAVX(datos *in, int N, int semilla)
 {
     srand(semilla);
+    int innerN = N;
+    if(N % 4 != 0){
+        N = N + (4 - N%4);
+    }
     in->a = (double **)malloc(N * sizeof(double *));
     in->b = (double **)malloc(8 * sizeof(double *));
     if(8 *sizeof(double) % 32 !=  0) {
@@ -74,6 +78,7 @@ void inicializacionAVX(datos *in, int N, int semilla)
     }
     in->c = (double *)aligned_alloc(32, 8 * sizeof(double));
     in->d = (double **)malloc(N * sizeof(double *));
+
     in->e = (double *)aligned_alloc(32, N * sizeof(double));
     in->ind = (int *)aligned_alloc(32, N * sizeof(int));
     for (int i = 0; i < N; i++)
@@ -90,7 +95,7 @@ void inicializacionAVX(datos *in, int N, int semilla)
     memset(in->e, 0, N * sizeof(double));
     in->f = 0;
 
-   for (int i = 0; i < N; i++)
+   for (int i = 0; i < innerN; i++)
     {
         in->ind[i] = i;
         if (i < 8)
@@ -102,7 +107,7 @@ void inicializacionAVX(datos *in, int N, int semilla)
         }
     }
     // Shuffle
-    for (int i = N - 1; i >= 1; i--)
+    for (int i = innerN - 1; i >= 1; i--)
     {
         int j = rand() % (i + 1);
         double temp = *(in->a[i]);

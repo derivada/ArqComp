@@ -5,7 +5,7 @@
 #include <omp.h>
 #include "utils.h"
 
-#define ALG_NAME "algOmp"
+#define ALG_NAME "algOmp_"
 FILE *outputFile;
 
 // Funciones de leer parámetros y cerrar archivo de salida
@@ -16,7 +16,7 @@ void cerrarArchivoSalida(int status, void *args);
 int algoritmoOMP(datos in);
 
 // Variables del experimento
-int N, semilla;
+int N, semilla, numThreads;
 
 int main(int argc, const char *argv[])
 {
@@ -24,7 +24,7 @@ int main(int argc, const char *argv[])
     leerParametros(argc, argv);
     datos *casoPrueba = (datos *)malloc(sizeof(datos));
     tiempos results;
-
+    omp_set_num_threads(numThreads);
     // Inicializamos y aleatoriazamos el caso de prueba
     inicializacion(casoPrueba, N, semilla);
 
@@ -32,7 +32,7 @@ int main(int argc, const char *argv[])
     results = medirTiempoEjecucion(algoritmoOMP, *casoPrueba);
 
     // Registramos los resultados
-    fprintf(outputFile, "%d,%s,%d,%lf,%lf\n", N, ALG_NAME, results.ck, results.ck_medios, results.microsegundos);
+    fprintf(outputFile, "%d,%s%d,%d,%lf,%lf\n", N, ALG_NAME, numThreads, results.ck, results.ck_medios, results.microsegundos);
 
     // Liberación de mi negro jerónimo
     liberarMemoria(*casoPrueba, N);
@@ -83,17 +83,18 @@ int algoritmoOMP(datos in)
 
 void leerParametros(int argc, const char *argv[])
 {
-    if (argc != 4)
+    if (argc != 5)
     {
-        printf("Uso correcto: ./main N SEM_ALEAT OUTPUT_FILE\n");
+        printf("Uso correcto: ./main NUM_THREADS N SEM_ALEAT OUTPUT_FILE\n");
         exit(EXIT_FAILURE);
     }
     else
     {
         // N: tamaño de la operación
-        N = atoi(argv[1]);
-        semilla = atoi(argv[2]);
-        if ((outputFile = fopen(argv[3], "a")) == NULL) // Abrimos el archivo de salida
+        numThreads = atoi(argv[1]);
+        N = atoi(argv[2]);
+        semilla = atoi(argv[3]);
+        if ((outputFile = fopen(argv[4], "a")) == NULL) // Abrimos el archivo de salida
         {
             printf("Error al abrir el archivo de salida\n");
             exit(EXIT_FAILURE);

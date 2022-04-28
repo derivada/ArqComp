@@ -38,14 +38,22 @@ int main(int argc, const char *argv[])
     exit(EXIT_SUCCESS);
 }
 
-
 int algoritmoSecuencial(datos in)
 {
     for (int i = 0; i < N; i++)                                        // N iteraciones
         for (int j = 0; j < N; j++)                                    // N iteraciones
             for (int k = 0; k < 8; k++)                                // 8 iteraciones
                 in.d[i][j] += 2 * in.a[i][k] * (in.b[k][j] - in.c[k]); // 9 accesos
-
+    /*
+    for (int i = 0; i < N; i++)
+    {
+        for (int j = 0; j < N - 1; j++)
+        {
+            printf("%10lf, ", in.d[i][j]);
+        }
+        printf("%10lf\n", in.d[i][N - 1]);
+    }
+    */
     for (int i = 0; i < N; i++)
     {                                             // N iteraciones
         in.e[i] = in.d[in.ind[i]][in.ind[i]] / 2; // 5 accesos
@@ -77,7 +85,7 @@ void leerParametros(int argc, const char *argv[])
             exit(EXIT_FAILURE);
         }
         on_exit(cerrarArchivoSalida, NULL); // Al acabar cerramos el archivo de salida!
-        if (N <= 0) // Comprobamos que los valores de entrada son válidos
+        if (N <= 0)                         // Comprobamos que los valores de entrada son válidos
         {
             printf("Alguno de los argumentos numéricos es incorrecto\n");
             exit(EXIT_FAILURE);

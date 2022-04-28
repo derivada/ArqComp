@@ -9,3 +9,8 @@ prac1/*.html
 prac1/.RData
 prac1/.Rhistory
 prac1/test*
+prac2/salida.txt
+prac2/.RData
+prac2.Rhistory
+prac2/*.o
+prac2/*.png

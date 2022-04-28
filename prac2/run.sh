@@ -50,6 +50,13 @@ then
     exit 1
 fi
 
+gcc -Wall -O0 -o algAVX2_OMP.o algAVX2_OMP.c utils.c -fopenmp -mavx2
+if [ $? -ne 0 ]
+then
+    echo "Error al compilar algoritmo de AVX2 + OMP"
+    exit 1
+fi
+
 # Reseteamos el archivo de salida
 if [ -f salida.txt ]
 then
@@ -59,7 +66,7 @@ echo "N,alg,ck,ck_medios,t_us" > salida.txt
 
 
 # Ejecutamos cada programa 10 veces para cada valor de N
-valoresN=(32 128 512 2048)
+valoresN=(250 500 750 1000 1500 2000 2550 3000)
 MAX_TESTS=5
 count=0
 # loop MAX_TESTS times
@@ -68,15 +75,20 @@ while [ $count -lt $MAX_TESTS ]; do
         # get random seed
         SEED=$(($RANDOM))
         ./algSecuencial.o $N $SEED salida.txt          
-        #./algSecuencialOptimizadoOrden.o $N $SEED salida.txt    
+        ./algSecuencialOptimizadoOrden.o $N $SEED salida.txt    
         # ./algSecuencialOptimizadoUnrollingv1.o $N $SEED salida.txt
         ./algSecuencialOptimizadoUnrollingv2.o $N $SEED salida.txt   
         # ./algSecuencialOptimizadoTiling.o 2 $N $SEED salida.txt
-        #./algSecuencialOptimizadoTiling.o 4 $N $SEED salida.txt
+        ./algSecuencialOptimizadoTiling.o 4 $N $SEED salida.txt
         # ./algSecuencialOptimizadoTiling.o 8 $N $SEED salida.txt
         # ./algSecuencialOptimizadoTiling.o 16 $N $SEED salida.txt   
         ./algAVX2.o $N $SEED salida.txt
-        ./algOMP.o $N $SEED salida.txt
+        ./algOMP.o 2 $N $SEED salida.txt
+        ./algOMP.o 4 $N $SEED salida.txt
+        ./algOMP.o 8192 $N $SEED salida.txt
+        ./algAVX2_OMP.o 2 $N $SEED salida.txt
+        ./algAVX2_OMP.o 4 $N $SEED salida.txt
+        ./algAVX2_OMP.o 8192 $N $SEED salida.txt    
     done
     (( count++ ))
     echo "Tests done ($count / $MAX_TESTS)"

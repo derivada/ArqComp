@@ -11,7 +11,6 @@
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}",
                 "-O0",
-                "-mavx2",
                 "utils.c"
             ],
             "options": {
