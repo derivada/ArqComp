@@ -16,6 +16,7 @@ int algSecOptTiling(datos in);
 
 // Variables del experimento
 int N, semilla, blockSize;
+char *optimizationFlag;
 
 int main(int argc, const char *argv[])
 {
@@ -31,8 +32,8 @@ int main(int argc, const char *argv[])
     results = medirTiempoEjecucion(algSecOptTiling, *casoPrueba);
 
     // Registramos los resultados
-    fprintf(outputFile, "%d,%s%d,%d,%lf, %lf\n", 
-    N, ALG_NAME, blockSize, results.ck, results.ck_medios, results.microsegundos);
+    fprintf(outputFile, "%d,%s%d (%s),%d,%lf, %lf\n",
+            N, ALG_NAME, blockSize, optimizationFlag, results.ck, results.ck_medios, results.microsegundos);
 
     // Liberación de mi negro jerónimo
     liberarMemoria(*casoPrueba, N);
@@ -73,8 +74,8 @@ int algSecOptTiling(datos in)
         in.f += in.e[i];                          // 2 accesos
     }
     if (DEBUG_MSG)
-        printf("Resultado del algoritmo secuencial por tiling (bs = %d): f = %4lf\n", 
-        blockSize, in.f);
+        printf("Resultado del algoritmo secuencial por tiling (bs = %d): f = %4lf\n",
+               blockSize, in.f);
 
     // accesos = (9*8*N*N) + (N*5*2)    // Inicializamos el contador
     int accesos = N * (72 * N + 10);
@@ -90,6 +91,10 @@ void leerParametros(int argc, const char *argv[])
     }
     else
     {
+        optimizationFlag = (char *)malloc(3 * sizeof(char));
+        strncpy(optimizationFlag, argv[0] + (strlen(argv[0]) - 4), 2);
+        *(optimizationFlag + 2) = '\0';
+        
         blockSize = atoi(argv[1]);
         N = atoi(argv[2]);
         semilla = atoi(argv[3]);

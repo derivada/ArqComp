@@ -16,6 +16,7 @@ int algSecOptUnroll2(datos in);
 
 // Variables del experimento
 int N, semilla;
+char *optimizationFlag;
 
 int main(int argc, const char *argv[])
 {
@@ -31,7 +32,8 @@ int main(int argc, const char *argv[])
     results = medirTiempoEjecucion(algSecOptUnroll2, *casoPrueba);
 
     // Registramos los resultados
-    fprintf(outputFile, "%d,%s,%d,%lf,%lf\n", N, ALG_NAME, results.ck, results.ck_medios, results.microsegundos);
+    fprintf(outputFile, "%d,%s (%s),%d,%lf,%lf\n",
+            N, ALG_NAME, optimizationFlag, results.ck, results.ck_medios, results.microsegundos);
 
     // Liberación de mi negro jerónimo
     liberarMemoria(*casoPrueba, N);
@@ -54,52 +56,17 @@ int algSecOptUnroll2(datos in)
             int a = j + 1;
             int b = j + 2;
             int c = j + 3;
-            in.d[i][j] += 2 * in.a[i][0] * (in.b[0][j] - in.c[0])
-            + 2 * in.a[i][1] * (in.b[1][j] - in.c[1])
-            + 2 * in.a[i][2] * (in.b[2][j] - in.c[2])
-            + 2 * in.a[i][3] * (in.b[3][j] - in.c[3])
-            + 2 * in.a[i][4] * (in.b[4][j] - in.c[4])
-            + 2 * in.a[i][5] * (in.b[5][j] - in.c[5])
-            + 2 * in.a[i][6] * (in.b[6][j] - in.c[6])
-            + 2 * in.a[i][7] * (in.b[7][j] - in.c[7]);
+            in.d[i][j] += 2 * in.a[i][0] * (in.b[0][j] - in.c[0]) + 2 * in.a[i][1] * (in.b[1][j] - in.c[1]) + 2 * in.a[i][2] * (in.b[2][j] - in.c[2]) + 2 * in.a[i][3] * (in.b[3][j] - in.c[3]) + 2 * in.a[i][4] * (in.b[4][j] - in.c[4]) + 2 * in.a[i][5] * (in.b[5][j] - in.c[5]) + 2 * in.a[i][6] * (in.b[6][j] - in.c[6]) + 2 * in.a[i][7] * (in.b[7][j] - in.c[7]);
             // AREA J = 1
-            in.d[i][a] += 2 * in.a[i][0] * (in.b[0][a] - in.c[0])
-             + 2 * in.a[i][1] * (in.b[1][a] - in.c[1])
-             + 2 * in.a[i][2] * (in.b[2][a] - in.c[2])
-             + 2 * in.a[i][3] * (in.b[3][a] - in.c[3])
-             + 2 * in.a[i][4] * (in.b[4][a] - in.c[4])
-             + 2 * in.a[i][5] * (in.b[5][a] - in.c[5])
-             + 2 * in.a[i][6] * (in.b[6][a] - in.c[6])
-             + 2 * in.a[i][7] * (in.b[7][a] - in.c[7]);
+            in.d[i][a] += 2 * in.a[i][0] * (in.b[0][a] - in.c[0]) + 2 * in.a[i][1] * (in.b[1][a] - in.c[1]) + 2 * in.a[i][2] * (in.b[2][a] - in.c[2]) + 2 * in.a[i][3] * (in.b[3][a] - in.c[3]) + 2 * in.a[i][4] * (in.b[4][a] - in.c[4]) + 2 * in.a[i][5] * (in.b[5][a] - in.c[5]) + 2 * in.a[i][6] * (in.b[6][a] - in.c[6]) + 2 * in.a[i][7] * (in.b[7][a] - in.c[7]);
             // AREA J = 2
-            in.d[i][b] += 2 * in.a[i][0] * (in.b[0][b] - in.c[0])
-             + 2 * in.a[i][1] * (in.b[1][b] - in.c[1])
-             + 2 * in.a[i][2] * (in.b[2][b] - in.c[2])
-             + 2 * in.a[i][3] * (in.b[3][b] - in.c[3])
-             + 2 * in.a[i][4] * (in.b[4][b] - in.c[4])
-             + 2 * in.a[i][5] * (in.b[5][b] - in.c[5])
-             + 2 * in.a[i][6] * (in.b[6][b] - in.c[6])
-             + 2 * in.a[i][7] * (in.b[7][b] - in.c[7]);
+            in.d[i][b] += 2 * in.a[i][0] * (in.b[0][b] - in.c[0]) + 2 * in.a[i][1] * (in.b[1][b] - in.c[1]) + 2 * in.a[i][2] * (in.b[2][b] - in.c[2]) + 2 * in.a[i][3] * (in.b[3][b] - in.c[3]) + 2 * in.a[i][4] * (in.b[4][b] - in.c[4]) + 2 * in.a[i][5] * (in.b[5][b] - in.c[5]) + 2 * in.a[i][6] * (in.b[6][b] - in.c[6]) + 2 * in.a[i][7] * (in.b[7][b] - in.c[7]);
             // AREA J = 3
-            in.d[i][c] += 2 * in.a[i][0] * (in.b[0][c] - in.c[0])
-             + 2 * in.a[i][1] * (in.b[1][c] - in.c[1])
-             + 2 * in.a[i][2] * (in.b[2][c] - in.c[2])
-             + 2 * in.a[i][3] * (in.b[3][c] - in.c[3])
-             + 2 * in.a[i][4] * (in.b[4][c] - in.c[4])
-             + 2 * in.a[i][5] * (in.b[5][c] - in.c[5])
-             + 2 * in.a[i][6] * (in.b[6][c] - in.c[6])
-             + 2 * in.a[i][7] * (in.b[7][c] - in.c[7]);
+            in.d[i][c] += 2 * in.a[i][0] * (in.b[0][c] - in.c[0]) + 2 * in.a[i][1] * (in.b[1][c] - in.c[1]) + 2 * in.a[i][2] * (in.b[2][c] - in.c[2]) + 2 * in.a[i][3] * (in.b[3][c] - in.c[3]) + 2 * in.a[i][4] * (in.b[4][c] - in.c[4]) + 2 * in.a[i][5] * (in.b[5][c] - in.c[5]) + 2 * in.a[i][6] * (in.b[6][c] - in.c[6]) + 2 * in.a[i][7] * (in.b[7][c] - in.c[7]);
         }
         while (j < N)
         {
-            in.d[i][j] += 2 * in.a[i][0] * (in.b[0][j] - in.c[0])
-             + 2 * in.a[i][1] * (in.b[1][j] - in.c[1])
-             + 2 * in.a[i][2] * (in.b[2][j] - in.c[2])
-             + 2 * in.a[i][3] * (in.b[3][j] - in.c[3])
-             + 2 * in.a[i][4] * (in.b[4][j] - in.c[4])
-             + 2 * in.a[i][5] * (in.b[5][j] - in.c[5])
-             + 2 * in.a[i][6] * (in.b[6][j] - in.c[6])
-             + 2 * in.a[i][7] * (in.b[7][j] - in.c[7]);
+            in.d[i][j] += 2 * in.a[i][0] * (in.b[0][j] - in.c[0]) + 2 * in.a[i][1] * (in.b[1][j] - in.c[1]) + 2 * in.a[i][2] * (in.b[2][j] - in.c[2]) + 2 * in.a[i][3] * (in.b[3][j] - in.c[3]) + 2 * in.a[i][4] * (in.b[4][j] - in.c[4]) + 2 * in.a[i][5] * (in.b[5][j] - in.c[5]) + 2 * in.a[i][6] * (in.b[6][j] - in.c[6]) + 2 * in.a[i][7] * (in.b[7][j] - in.c[7]);
             j++;
         }
     }
@@ -127,6 +94,9 @@ void leerParametros(int argc, const char *argv[])
     }
     else
     {
+        optimizationFlag = (char *)malloc(3 * sizeof(char));
+        strncpy(optimizationFlag, argv[0] + (strlen(argv[0]) - 4), 2);
+        *(optimizationFlag + 2) = '\0';
         // N: tamaño de la operación
         N = atoi(argv[1]);
         semilla = atoi(argv[2]);

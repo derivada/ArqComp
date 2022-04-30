@@ -18,6 +18,7 @@ int algoritmoAVX2_OMP(datos in);
 
 // Variables del experimento
 int N, semilla, numThreads;
+char *optimizationFlag;
 
 int main(int argc, const char *argv[])
 {
@@ -35,7 +36,8 @@ int main(int argc, const char *argv[])
     results = medirTiempoEjecucion(algoritmoAVX2_OMP, *casoPrueba);
 
     // Registramos los resultados
-    fprintf(outputFile, "%d,%s%d,%d,%lf,%lf\n", N, ALG_NAME, numThreads, results.ck, results.ck_medios, results.microsegundos);
+    fprintf(outputFile, "%d,%s%d (%s),%d,%lf,%lf\n",
+            N, ALG_NAME, numThreads, optimizationFlag, results.ck, results.ck_medios, results.microsegundos);
 
     // Liberación de mi negro jerónimo
     liberarMemoria(*casoPrueba, N);
@@ -114,31 +116,8 @@ int algoritmoAVX2_OMP(datos in)
             in.d[i][b] = ((double *)&result_j23)[0];
             in.d[i][c] = ((double *)&result_j23)[1];
         }
-        /*while (j < N) {
-            __m256d b0_j0 = _mm256_set_pd(in.b[3][j], in.b[2][j], in.b[1][j], in.b[0][j]);
-            __m256d b4_j0 = _mm256_set_pd(in.b[7][j], in.b[6][j], in.b[5][j], in.b[4][j]);
-            __m256d d_j0 = _mm256_add_pd(
-                _mm256_mul_pd(a0, _mm256_sub_pd(b0_j0, c0)),
-                _mm256_mul_pd(a4, _mm256_sub_pd(b4_j0, c4)));
+    }
 
-            __m256d temp = _mm256_hadd_pd(d_j0, d_j0);
-            __m128d sum_high = _mm256_extractf128_pd(temp, 1);
-            __m128d result = _mm_add_pd(sum_high, _mm256_castpd256_pd128(temp));
-            in.d[i][j] = ((double *)&result)[0];
-            j++;
-        }*/
-    }
-    /*
-    for (int i = 0; i < innerN; i++)
-    {
-        for (int j = 0; j < innerN - 1; j++)
-        {
-            printf("%10lf, ", in.d[i][j]);
-        }
-        printf("%10lf\n", in.d[i][innerN - 1]);
-    }
-    */
-   
 #pragma omp parallel for
     for (int i = 0; i < innerN; i++)
     {
@@ -148,7 +127,7 @@ int algoritmoAVX2_OMP(datos in)
     }
 
     if (DEBUG_MSG)
-        printf("Resultado del algoritmo optimizado con AVX: f = %4lf\n", in.f);
+        printf("Resultado del algoritmo optimizado con OpenMP + AVX: f = %4lf\n", in.f);
 
     // accesos = (9*8*N*N) + (N*5*2)    // Inicializamos el contador
     int accesos = innerN * (72 * innerN + 10);
@@ -164,6 +143,9 @@ void leerParametros(int argc, const char *argv[])
     }
     else
     {
+        optimizationFlag = (char *)malloc(3 * sizeof(char));
+        strncpy(optimizationFlag, argv[0] + (strlen(argv[0]) - 4), 2);
+        *(optimizationFlag + 2) = '\0';
         // N: tamaño de la operación
         numThreads = atoi(argv[1]);
         N = atoi(argv[2]);

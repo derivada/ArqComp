@@ -5,7 +5,7 @@
 #include <immintrin.h>
 #include "utils.h"
 
-#define ALG_NAME "algAVX2"
+#define ALG_NAME "algAVX2store"
 FILE *outputFile;
 
 // Funciones de leer parámetros y cerrar archivo de salida
@@ -89,8 +89,8 @@ int algoritmoAVX2store(datos in)
             // Reducción y guardado en d
             __m256d sum_j01 = _mm256_hadd_pd(d_j0, d_j1);
             __m128d result_j01 = _mm_add_pd(_mm256_extractf128_pd(sum_j01, 0), _mm256_extractf128_pd(sum_j01, 1));
-            in.d[i][j] = ((double *)&result_j01)[0];
-            in.d[i][a] = ((double *)&result_j01)[1];
+
+            _mm_stream_pd(&in.d[i][j], result_j01);
 
             // UNROLLING DE 4
             int b = j + 2;
@@ -110,8 +110,7 @@ int algoritmoAVX2store(datos in)
             // Reducción y guardado en d
             __m256d sum_j23 = _mm256_hadd_pd(d_j2, d_j3);
             __m128d result_j23 = _mm_add_pd(_mm256_extractf128_pd(sum_j23, 0), _mm256_extractf128_pd(sum_j23, 1));
-            in.d[i][b] = ((double *)&result_j23)[0];
-            in.d[i][c] = ((double *)&result_j23)[1];
+            _mm_stream_pd(&in.d[i][b], result_j23);
         }
     }
 
@@ -122,7 +121,7 @@ int algoritmoAVX2store(datos in)
     }
 
     if (DEBUG_MSG)
-        printf("Resultado del algoritmo optimizado con AVX: f = %4lf\n", in.f);
+        printf("Resultado del algoritmo optimizado con AVX con store: f = %4lf\n", in.f);
 
     // accesos = (9*8*N*N) + (N*5*2)    // Inicializamos el contador
     int accesos = innerN * (72 * innerN + 10);

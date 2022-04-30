@@ -17,6 +17,7 @@ int algoritmoOMP(datos in);
 
 // Variables del experimento
 int N, semilla, numThreads;
+char *optimizationFlag;
 
 int main(int argc, const char *argv[])
 {
@@ -32,7 +33,8 @@ int main(int argc, const char *argv[])
     results = medirTiempoEjecucion(algoritmoOMP, *casoPrueba);
 
     // Registramos los resultados
-    fprintf(outputFile, "%d,%s%d,%d,%lf,%lf\n", N, ALG_NAME, numThreads, results.ck, results.ck_medios, results.microsegundos);
+    fprintf(outputFile, "%d,%s%d (%s),%d,%lf,%lf\n",
+            N, ALG_NAME, numThreads, optimizationFlag, results.ck, results.ck_medios, results.microsegundos);
 
     // Liberación de mi negro jerónimo
     liberarMemoria(*casoPrueba, N);
@@ -90,6 +92,9 @@ void leerParametros(int argc, const char *argv[])
     }
     else
     {
+        optimizationFlag = (char *)malloc(3 * sizeof(char));
+        strncpy(optimizationFlag, argv[0] + (strlen(argv[0]) - 4), 2);
+        *(optimizationFlag + 2) = '\0';
         // N: tamaño de la operación
         numThreads = atoi(argv[1]);
         N = atoi(argv[2]);

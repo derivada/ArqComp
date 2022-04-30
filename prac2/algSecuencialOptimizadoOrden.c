@@ -16,6 +16,7 @@ int algSecOptOrden(datos in);
 
 // Variables del experimento
 int N, semilla;
+char *optimizationFlag;
 
 int main(int argc, const char *argv[])
 {
@@ -31,7 +32,8 @@ int main(int argc, const char *argv[])
     results = medirTiempoEjecucion(algSecOptOrden, *casoPrueba);
 
     // Registramos los resultados
-    fprintf(outputFile, "%d,%s,%d,%lf,%lf\n", N, ALG_NAME, results.ck, results.ck_medios, results.microsegundos);
+    fprintf(outputFile, "%d,%s (%s),%d,%lf,%lf\n",
+            N, ALG_NAME, optimizationFlag, results.ck, results.ck_medios, results.microsegundos);
 
     // Liberación de mi negro jerónimo
     liberarMemoria(*casoPrueba, N);
@@ -46,11 +48,11 @@ int algSecOptOrden(datos in)
      *
      */
     for (int i = 0; i < N; i++) // N iteraciones
-    { 
+    {
         for (int k = 0; k < 8; k++) // 8 iteraciones
-        { 
+        {
             for (int j = 0; j < N; j++) // N iteraciones
-            {                                                          
+            {
                 in.d[i][j] += 2 * in.a[i][k] * (in.b[k][j] - in.c[k]); // 9 accesos
             }
         }
@@ -79,6 +81,9 @@ void leerParametros(int argc, const char *argv[])
     }
     else
     {
+        optimizationFlag = (char *)malloc(3 * sizeof(char));
+        strncpy(optimizationFlag, argv[0] + (strlen(argv[0]) - 4), 2);
+        *(optimizationFlag + 2) = '\0';
         // N: tamaño de la operación
         N = atoi(argv[1]);
         semilla = atoi(argv[2]);
