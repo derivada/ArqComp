@@ -6,7 +6,7 @@
 #include <omp.h>
 #include "utils.h"
 
-#define ALG_NAME "algAVX2_OMP_"
+#define ALG_NAME "AVX2+OMP"
 FILE *outputFile;
 
 // Funciones de leer parámetros y cerrar archivo de salida
@@ -36,7 +36,7 @@ int main(int argc, const char *argv[])
     results = medirTiempoEjecucion(algoritmoAVX2_OMP, *casoPrueba);
 
     // Registramos los resultados
-    fprintf(outputFile, "%d,%s%d (%s),%d,%lf,%lf\n",
+    fprintf(outputFile, "%d,%s (%d threads) (%s),%d,%lf,%lf\n",
             N, ALG_NAME, numThreads, optimizationFlag, results.ck, results.ck_medios, results.microsegundos);
 
     // Liberación de mi negro jerónimo
@@ -59,13 +59,13 @@ int algoritmoAVX2_OMP(datos in)
     __m256d c0 = _mm256_load_pd(&in.c[0]);
     __m256d c4 = _mm256_load_pd(&in.c[4]);
     // bordes
-    int innerN = N;
+    int newN = N;
     if (N % 4 != 0)
     {
-        N = N + (4 - N % 4);
+        newN = N + (4 - N % 4);
     }
 #pragma omp parallel for
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < newN; i++)
     {
         // in.a[i][k] * 2
         __m256d a0 = _mm256_load_pd(&in.a[i][0]);
@@ -73,7 +73,7 @@ int algoritmoAVX2_OMP(datos in)
         a0 = _mm256_mul_pd(a0, scalar2);
         a4 = _mm256_mul_pd(a4, scalar2);
         int j;
-        for (j = 0; j < N; j += 4)
+        for (j = 0; j < newN; j += 4)
         {
             // in.d[i][j] += 2 * in.a[i][k] * (in.b[k][j] - in.c[k]);
             __m256d b0_j0 = _mm256_set_pd(in.b[3][j], in.b[2][j], in.b[1][j], in.b[0][j]);
@@ -119,7 +119,7 @@ int algoritmoAVX2_OMP(datos in)
     }
 
 #pragma omp parallel for
-    for (int i = 0; i < innerN; i++)
+    for (int i = 0; i < N; i++)
     {
         in.e[i] = in.d[in.ind[i]][in.ind[i]] / 2;
 #pragma omp atomic
@@ -130,7 +130,7 @@ int algoritmoAVX2_OMP(datos in)
         printf("Resultado del algoritmo optimizado con OpenMP + AVX: f = %4lf\n", in.f);
 
     // accesos = (9*8*N*N) + (N*5*2)    // Inicializamos el contador
-    int accesos = innerN * (72 * innerN + 10);
+    int accesos = N * (72 * N + 10);
     return accesos;
 }
 

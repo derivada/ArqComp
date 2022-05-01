@@ -4,7 +4,7 @@
 #include <time.h>
 #include "utils.h"
 
-#define ALG_NAME "algSec"
+#define ALG_NAME "Sec"
 FILE *outputFile;
 
 // Funciones de leer parámetros y cerrar archivo de salida

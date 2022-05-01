@@ -5,7 +5,7 @@
 #include <omp.h>
 #include "utils.h"
 
-#define ALG_NAME "algOmp_"
+#define ALG_NAME "OMP"
 FILE *outputFile;
 
 // Funciones de leer parámetros y cerrar archivo de salida
@@ -33,7 +33,7 @@ int main(int argc, const char *argv[])
     results = medirTiempoEjecucion(algoritmoOMP, *casoPrueba);
 
     // Registramos los resultados
-    fprintf(outputFile, "%d,%s%d (%s),%d,%lf,%lf\n",
+    fprintf(outputFile, "%d,%s (%d threads) (%s),%d,%lf,%lf\n",
             N, ALG_NAME, numThreads, optimizationFlag, results.ck, results.ck_medios, results.microsegundos);
 
     // Liberación de mi negro jerónimo

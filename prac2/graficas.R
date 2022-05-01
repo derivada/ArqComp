@@ -1,5 +1,5 @@
-
 library(ggplot2)
+library("ggrepel")                              
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # wd = carpeta contenedora del script (solo funciona en RSTUDIO)
 
 # Preparar datos
@@ -45,6 +45,32 @@ plotCiclos = ggplot(data = datosCiclos, mapping = aes(x = N, y = ck)) +
 
 ggsave("graficaCiclos.png", plotCiclos, width = 15, height = 10)
 
+datosSpeedup = datosTiempo
+algBase = "Sec (O0)"
+tiemposAlgBase = datosSpeedup[datosSpeedup$alg == algBase, ]
+datosSpeedup$t_us = apply(datosSpeedup, 1, function(x) {
+  x[3] = tiemposAlgBase$t_us[tiemposAlgBase$N == as.numeric(trimws(x[1], "both"))] / as.numeric(x[3])
+})
+colnames(datosSpeedup)[which(names(datosSpeedup) == "t_us")] <- "speedup"                              
+plotSpeedup = ggplot(data = datosSpeedup, mapping = aes(x = N, y = speedup)) +
+  geom_line(aes(color = alg, group = alg), lwd = 1) +
+  labs(title = "Speedup de cada algoritmo respecto al secuencial con -O0",
+       x = "N (Tamaño del problema)",
+       y = "Veces más rápido") +
+  theme_bw() +
+  theme(legend.title = element_text(size = 15),
+        legend.text = element_text(size=15),
+        legend.key.size = unit(1, 'cm'),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        axis.text.x = element_text(size = 30),
+        axis.text.y = element_text(size = 30),
+        title = element_text(size = 25))
+  
+
+ggsave("graficaSpeedup.png", plotSpeedup, width = 15, height = 10)
+plotSpeedup
 # Mostrar gráficas
-plotTiempo
+#plotTiempo
 #plotCiclos
+#plotSpeedup
