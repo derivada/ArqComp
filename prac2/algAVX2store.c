@@ -5,7 +5,7 @@
 #include <immintrin.h>
 #include "utils.h"
 
-#define ALG_NAME "algAVX2store"
+#define ALG_NAME "AVX2Store"
 FILE *outputFile;
 
 // Funciones de leer parámetros y cerrar archivo de salida
@@ -57,12 +57,12 @@ int algoritmoAVX2store(datos in)
     __m256d c0 = _mm256_load_pd(&in.c[0]);
     __m256d c4 = _mm256_load_pd(&in.c[4]);
     // bordes
-    int innerN = N;
+    int newN = N;
     if (N % 4 != 0)
     {
-        N = N + (4 - N % 4);
+        newN = N + (4 - N % 4);
     }
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < newN; i++)
     {
         // in.a[i][k] * 2
         __m256d a0 = _mm256_load_pd(&in.a[i][0]);
@@ -114,7 +114,7 @@ int algoritmoAVX2store(datos in)
         }
     }
 
-    for (int i = 0; i < innerN; i++)
+    for (int i = 0; i < N; i++)
     {
         in.e[i] = in.d[in.ind[i]][in.ind[i]] / 2;
         in.f += in.e[i];
@@ -124,7 +124,7 @@ int algoritmoAVX2store(datos in)
         printf("Resultado del algoritmo optimizado con AVX con store: f = %4lf\n", in.f);
 
     // accesos = (9*8*N*N) + (N*5*2)    // Inicializamos el contador
-    int accesos = innerN * (72 * innerN + 10);
+    int accesos = N * (72 * N + 10);
     return accesos;
 }
 

@@ -4,7 +4,7 @@
 #include <time.h>
 #include "utils.h"
 
-#define ALG_NAME "secOptTiling_"
+#define ALG_NAME "OptTiling"
 FILE *outputFile;
 
 // Funciones de leer parámetros y cerrar archivo de salida
@@ -32,7 +32,7 @@ int main(int argc, const char *argv[])
     results = medirTiempoEjecucion(algSecOptTiling, *casoPrueba);
 
     // Registramos los resultados
-    fprintf(outputFile, "%d,%s%d (%s),%d,%lf, %lf\n",
+    fprintf(outputFile, "%d,%s (tile = %d) (%s),%d,%lf, %lf\n",
             N, ALG_NAME, blockSize, optimizationFlag, results.ck, results.ck_medios, results.microsegundos);
 
     // Liberación de mi negro jerónimo

@@ -4,7 +4,7 @@
 #include <time.h>
 #include "utils.h"
 
-#define ALG_NAME "secOptOrden"
+#define ALG_NAME "OptOrden"
 FILE *outputFile;
 
 // Funciones de leer parámetros y cerrar archivo de salida
