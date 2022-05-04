@@ -45,25 +45,27 @@ int algoritmoSecuencial(datos in)
         for (int j = 0; j < N; j++)                                    // N iteraciones
             for (int k = 0; k < 8; k++)                                // 8 iteraciones
                 in.d[i][j] += 2 * in.a[i][k] * (in.b[k][j] - in.c[k]); // 9 accesos
-    /*
-    for (int i = 0; i < N; i++)
-    {
-        for (int j = 0; j < N - 1; j++)
-        {
-            printf("%10lf, ", in.d[i][j]);
-        }
-        printf("%10lf\n", in.d[i][N - 1]);
-    }
-    */
+
     for (int i = 0; i < N; i++) // N iteraciones
     {
         int index = in.ind[i];            // 1 acceso
         in.e[i] = in.d[index][index] / 2; // 3 accesos
         in.f += in.e[i];                  // 2 accesos
     }
-    
+
     if (DEBUG_MSG)
+    {
+        for (int i = 0; i < N; i++)
+        {
+            for (int j = 0; j < N - 1; j++)
+            {
+                printf("%4lf, ", in.d[i][j]);
+            }
+            printf("%4lf\n", in.d[i][N - 1]);
+        }
+        printf("\n");
         printf("Resultado del algoritmo secuencial: f = %4lf\n", in.f);
+    }
 
     // accesos = (9*8*N*N) + (N*5*2)    // Inicializamos el contador
     int accesos = N * (72 * N + 10);
