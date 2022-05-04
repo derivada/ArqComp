@@ -4,7 +4,7 @@
 #include <time.h>
 #include "utils.h"
 
-#define ALG_NAME "Sec"
+#define ALG_NAME "SecOptOper"
 FILE *outputFile;
 
 // Funciones de leer parámetros y cerrar archivo de salida
@@ -41,16 +41,15 @@ int main(int argc, const char *argv[])
 
 int algoritmoSecuencial(datos in)
 {
-    for (int i = 0; i < N; i++)                                        // N iteraciones
-        for (int j = 0; j < N; j++)                                    // N iteraciones
-            for (int k = 0; k < 8; k++)                                // 8 iteraciones
-                in.d[i][j] += 2 * in.a[i][k] * (in.b[k][j] - in.c[k]); // 9 accesos
+    for (int i = 0; i < N; i++)                                    // N iteraciones
+        for (int j = 0; j < N; j++)                                // N iteraciones
+            for (int k = 0; k < 8; k++)                            // 8 iteraciones
+                in.d[i][j] += in.a[i][k] * (in.b[k][j] - in.c[k]); // 9 accesos
 
     for (int i = 0; i < N; i++) // N iteraciones
     {
-        int index = in.ind[i];            // 1 acceso
-        in.e[i] = in.d[index][index] / 2; // 3 accesos
-        in.f += in.e[i];                  // 2 accesos
+        in.e[i] = in.d[i][i]; // 3 accesos
+        in.f += in.e[i];      // 2 accesos
     }
 
     if (DEBUG_MSG)
@@ -67,7 +66,7 @@ int algoritmoSecuencial(datos in)
             }
         }
         printf("\n");
-        printf("Resultado del algoritmo secuencial: f = %4lf\n", in.f);
+        printf("Resultado del algoritmo secuencial con cambio de operaciones: f = %4lf\n", in.f);
     }
 
     // accesos = (9*8*N*N) + (N*5*2)    // Inicializamos el contador

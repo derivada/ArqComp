@@ -46,18 +46,9 @@ int algSecOptTiling(datos in)
      * OPTIMIZACIONES REALIZADAS
      * 3. Tiling en los bucles i y j
      */
-
-    for (int j = 0; j < N; j++)
-    {
-        in.b[0][j] -= in.c[0];
-        in.b[1][j] -= in.c[1];
-        in.b[2][j] -= in.c[2];
-        in.b[3][j] -= in.c[3];
-        in.b[4][j] -= in.c[4];
-        in.b[5][j] -= in.c[5];
-        in.b[6][j] -= in.c[6];
-        in.b[7][j] -= in.c[7];
-    }
+    for (int k = 0; k < 8; k++)
+        for (int j = 0; j < N; j++)
+            in.b[k][j] -= in.c[k];
 
     // D = 2 * A x B
     // ORIGINAL: in.d[i][j] += 2 * in.a[i][k] * (in.b[k][j] - in.c[k]);
@@ -69,7 +60,7 @@ int algSecOptTiling(datos in)
             int minCol = jj + colBlockSize;
             if (minCol > N)
                 minCol = N;
-            for (int j = 0; j < N; j += 2)
+            for (int j = jj; j < minCol; j += 2)
             {
                 int minRow = ii + rowBlockSize;
                 if (minRow > N)
@@ -100,16 +91,18 @@ int algSecOptTiling(datos in)
     }
     if (DEBUG_MSG)
     {
-        for (int i = 0; i < N; i++)
+        if (DEBUG_MSG > 1)
         {
-            for (int j = 0; j < N - 1; j++)
+            for (int i = 0; i < N; i++)
             {
-                printf("%4lf, ", in.d[i][j]);
+                for (int j = 0; j < N - 1; j++)
+                {
+                    printf("%4lf, ", in.d[i][j]);
+                }
+                printf("%4lf\n", in.d[i][N - 1]);
             }
-            printf("%4lf\n", in.d[i][N - 1]);
+            printf("\n");
         }
-        printf("\n");
-
         printf("Resultado del algoritmo secuencial por tiling (bs = %dx%d): f = %4lf\n",
                rowBlockSize, colBlockSize, in.f);
     }

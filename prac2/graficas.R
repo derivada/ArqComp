@@ -69,11 +69,8 @@ plotSpeedup = ggplot(data = datosSpeedup, mapping = aes(x = N, y = speedup)) +
   
 
 ggsave("graficaSpeedup.png", plotSpeedup, width = 15, height = 10)
-<<<<<<< HEAD
 plotSpeedup
-=======
 
->>>>>>> 89b8ed97f4c03701080c8bf835232d61463949a6
 # Mostrar gráficas
 #plotTiempo
 #plotCiclos
