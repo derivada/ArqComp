@@ -33,6 +33,13 @@ fi
 gcc -Wall -O2 -o algSecuencialOptimizadoUnrollingv2_O2.o algSecuencialOptimizadoUnrollingv2.c utils.c
 gcc -Wall -O3 -o algSecuencialOptimizadoUnrollingv2_O3.o algSecuencialOptimizadoUnrollingv2.c utils.c
 
+gcc -Wall -O0 -o algSecuencialOptimizadoUnrollingv3_O0.o algSecuencialOptimizadoUnrollingv3.c utils.c
+if [ $? -ne 0 ]
+then
+    echo "Error al compilar algoritmo secuencial optimizado por unrolling v3"
+    exit 1
+fi
+
 gcc -Wall -O0 -o algSecuencialOptimizadoTiling_O0.o algSecuencialOptimizadoTiling.c utils.c
 if [ $? -ne 0 ]
 then
@@ -101,11 +108,12 @@ while [ $count -lt $MAX_TESTS ]; do
         #./algSecuencialOptimizadoOrden_O0.o $N $SEED salida.txt   
         #./algSecuencialOptimizadoUnrollingv2_O0.o $N $SEED salida.txt
         #./algSecuencialOptimizadoUnrollingv2_O2.o $N $SEED salida.txt
-        #./algSecuencialOptimizadoUnrollingv2_O3.o $N $SEED salida.txt   
-        ./algSecuencialOptimizadoTiling_O0.o 4 4 $N $SEED salida.txt
-        ./algSecuencialOptimizadoTiling_O0.o 64 64 $N $SEED salida.txt
-        ./algSecuencialOptimizadoTiling_O0.o 128 128 $N $SEED salida.txt
-        ./algSecuencialOptimizadoTiling_O0.o 256 256 $N $SEED salida.txt
+        #./algSecuencialOptimizadoUnrollingv2_O3.o $N $SEED salida.txt
+        ./algSecuencialOptimizadoUnrollingv3_O0.o $N $SEED salida.txt   
+        #./algSecuencialOptimizadoTiling_O0.o 4 4 $N $SEED salida.txt
+        #./algSecuencialOptimizadoTiling_O0.o 64 64 $N $SEED salida.txt
+        #./algSecuencialOptimizadoTiling_O0.o 128 128 $N $SEED salida.txt
+        #./algSecuencialOptimizadoTiling_O0.o 256 256 $N $SEED salida.txt
         #./algSecuencialOptimizadoTiling_O0.o 8 $N $SEED salida.txt
         #./algSecuencialOptimizadoTiling_O0.o 16 $N $SEED salida.txt   
         #./algAVX2store_O0.o $N $SEED salida.txt
