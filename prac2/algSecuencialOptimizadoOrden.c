@@ -45,7 +45,7 @@ int algSecOptOrden(datos in)
     /**
      * OPTIMIZACIONES REALIZADAS
      * 1. Cambiar de orden los bucles (el de k por j)
-     *
+     * 2. Definir las variables de bucle antes y el index también
      */
     for (int i = 0; i < N; i++) // N iteraciones
     {
@@ -57,11 +57,12 @@ int algSecOptOrden(datos in)
             }
         }
     }
-
+    int index;
     for (int i = 0; i < N; i++)
-    {                                             // N iteraciones
-        in.e[i] = in.d[in.ind[i]][in.ind[i]] / 2; // 5 accesos
-        in.f += in.e[i];                          // 2 accesos
+    {
+        index = in.ind[i];                // 1 acceso
+        in.e[i] = in.d[index][index] / 2; // 3 accesos
+        in.f += in.e[i];                  // 2 accesos
     }
 
     if (DEBUG_MSG)

@@ -42,15 +42,6 @@ int main(int argc, const char *argv[])
     exit(EXIT_SUCCESS);
 }
 
-void cargarB(datos in)
-{
-    double *aux = (double *)malloc(N * 8 * sizeof(double));
-    for (int i = 0; i < 8; i++)
-    {
-        in.b[i] = aux + N * sizeof(double);
-    }
-}
-
 int algoritmoAVX2store(datos in)
 {
     __m256d scalar2 = _mm256_set1_pd(2);
@@ -91,7 +82,7 @@ int algoritmoAVX2store(datos in)
             __m128d result_j01 = _mm_add_pd(_mm256_extractf128_pd(sum_j01, 0), _mm256_extractf128_pd(sum_j01, 1));
 
             _mm_stream_pd(&in.d[i][j], result_j01);
-
+            
             // UNROLLING DE 4
             int b = j + 2;
             __m256d b0_j2 = _mm256_set_pd(in.b[3][b], in.b[2][b], in.b[1][b], in.b[0][b]);

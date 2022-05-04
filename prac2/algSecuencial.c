@@ -55,11 +55,13 @@ int algoritmoSecuencial(datos in)
         printf("%10lf\n", in.d[i][N - 1]);
     }
     */
-    for (int i = 0; i < N; i++)
-    {                                             // N iteraciones
-        in.e[i] = in.d[in.ind[i]][in.ind[i]] / 2; // 5 accesos
-        in.f += in.e[i];                          // 2 accesos
+    for (int i = 0; i < N; i++) // N iteraciones
+    {
+        int index = in.ind[i];            // 1 acceso
+        in.e[i] = in.d[index][index] / 2; // 3 accesos
+        in.f += in.e[i];                  // 2 accesos
     }
+    
     if (DEBUG_MSG)
         printf("Resultado del algoritmo secuencial: f = %4lf\n", in.f);
 
