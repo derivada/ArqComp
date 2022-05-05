@@ -4,10 +4,10 @@
 #include <time.h>
 #include "utils.h"
 
-
 struct timespec start, stop;
 
-tiempos medirTiempoEjecucion (int (*funcion)(datos), datos data){
+tiempos medirTiempoEjecucion(int (*funcion)(datos), datos data)
+{
     tiempos tiempos;
     clock_gettime(CLOCK_REALTIME, &start);
     start_counter();
@@ -22,24 +22,20 @@ tiempos medirTiempoEjecucion (int (*funcion)(datos), datos data){
 void inicializacion(datos *in, int N, int semilla)
 {
     srand(semilla);
-    in->a = (double **)malloc(N * sizeof(double *));
-    in->b = (double **)malloc(8 * sizeof(double *));
-    in->c = (double *)malloc(8 * sizeof(double));
     in->d = (double **)malloc(N * sizeof(double *));
-    in->e = (double *)malloc(N * sizeof(double));
-    in->ind = (int *)malloc(N * sizeof(int));
-    for (int i = 0; i < N; i++)
-    {
-        in->a[i] = (double *)malloc(sizeof(double) * 8);
-        if (i < 8)
-        {
-            in->b[i] = (double *)malloc(sizeof(double) * N);
-        }
-        (in->d)[i] = (double *)malloc(sizeof(double) * N);
-        memset(in->d[i], 0, N * sizeof(double));
-    }
 
+    for (int i = 0; i < N; i++)
+        (in->d)[i] = (double *)calloc(N, sizeof(double));
+    in->a = (double **)malloc(N * sizeof(double *));
+    for (int i = 0; i < N; i++)
+        in->a[i] = (double *)malloc(sizeof(double) * 8);
+    in->b = (double **)malloc(8 * sizeof(double *));
+    for (int i = 0; i < 8; i++)
+        in->b[i] = (double *)malloc(sizeof(double) * N);
+    in->c = (double *)malloc(8 * sizeof(double));
+    in->e = (double *)malloc(N * sizeof(double));
     memset(in->e, 0, N * sizeof(double));
+    in->ind = (int *)malloc(N * sizeof(int));
     in->f = 0;
 
     for (int i = 0; i < N; i++)
@@ -67,35 +63,29 @@ void inicializacionAVX(datos *in, int N, int semilla)
 {
     srand(semilla);
     int innerN = N;
-    if(N % 4 != 0){
-        N = N + (4 - N%4);
+    if (N % 4 != 0)
+    {
+        N = N + (4 - N % 4);
     }
-    in->a = (double **)malloc(N * sizeof(double *));
-    in->b = (double **)malloc(8 * sizeof(double *));
-    if(8 *sizeof(double) % 32 !=  0) {
-        printf("MAL ALINEAMIENTO\n");
-        exit(EXIT_FAILURE);
-    }
-    in->c = (double *)aligned_alloc(32, 8 * sizeof(double));
     in->d = (double **)malloc(N * sizeof(double *));
-
-    in->e = (double *)aligned_alloc(32, N * sizeof(double));
-    in->ind = (int *)aligned_alloc(32, N * sizeof(int));
     for (int i = 0; i < N; i++)
     {
-        in->a[i] = (double *)aligned_alloc(32, sizeof(double) * 8);
-        if (i < 8)
-        {
-            in->b[i] = (double *)aligned_alloc(32, sizeof(double) * N);
-        }
         (in->d)[i] = (double *)aligned_alloc(32, sizeof(double) * N);
         memset(in->d[i], 0, N * sizeof(double));
     }
-
+    in->a = (double **)malloc(N * sizeof(double *));
+    for (int i = 0; i < N; i++)
+        in->a[i] = (double *)aligned_alloc(32, sizeof(double) * 8);
+    in->b = (double **)malloc(8 * sizeof(double *));
+    for (int i = 0; i < 8; i++)
+        in->b[i] = (double *)aligned_alloc(32, sizeof(double) * N);
+    in->c = (double *)aligned_alloc(32, 8 * sizeof(double));
+    in->e = (double *)aligned_alloc(32, N * sizeof(double));
     memset(in->e, 0, N * sizeof(double));
+    in->ind = (int *)aligned_alloc(32, N * sizeof(int));
     in->f = 0;
 
-   for (int i = 0; i < innerN; i++)
+    for (int i = 0; i < innerN; i++)
     {
         in->ind[i] = i;
         if (i < 8)
@@ -132,7 +122,6 @@ void liberarMemoria(datos in, int N)
     free(in.e);
     free(in.ind);
 }
-
 
 /**
  * Funciones para medir tiempos de la librería aportada en el CV

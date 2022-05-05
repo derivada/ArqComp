@@ -48,8 +48,7 @@ int algoritmoSecuencial(datos in)
 
     for (int i = 0; i < N; i++) // N iteraciones
     {
-        in.e[i] = in.d[i][i]; // 3 accesos
-        in.f += in.e[i];      // 2 accesos
+        in.f += in.d[i][i];
     }
 
     if (DEBUG_MSG)

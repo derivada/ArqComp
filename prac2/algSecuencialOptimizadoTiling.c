@@ -42,10 +42,6 @@ int main(int argc, const char *argv[])
 
 int algSecOptTiling(datos in)
 {
-    /**
-     * OPTIMIZACIONES REALIZADAS
-     * 3. Tiling en los bucles i y j
-     */
     for (int k = 0; k < 8; k++)
         for (int j = 0; j < N; j++)
             in.b[k][j] -= in.c[k];

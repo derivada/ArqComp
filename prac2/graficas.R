@@ -46,7 +46,7 @@ plotCiclos = ggplot(data = datosCiclos, mapping = aes(x = N, y = ck)) +
 ggsave("graficaCiclos.png", plotCiclos, width = 15, height = 10)
 
 datosSpeedup = datosTiempo
-algBase = "Sec (O0)"
+algBase = "Sec (O3)"
 tiemposAlgBase = datosSpeedup[datosSpeedup$alg == algBase, ]
 datosSpeedup$t_us = apply(datosSpeedup, 1, function(x) {
   x[3] = tiemposAlgBase$t_us[tiemposAlgBase$N == as.numeric(trimws(x[1], "both"))] / as.numeric(x[3])
@@ -54,7 +54,7 @@ datosSpeedup$t_us = apply(datosSpeedup, 1, function(x) {
 colnames(datosSpeedup)[which(names(datosSpeedup) == "t_us")] <- "speedup"                              
 plotSpeedup = ggplot(data = datosSpeedup, mapping = aes(x = N, y = speedup)) +
   geom_line(aes(color = alg, group = alg), lwd = 1) +
-  labs(title = "Speedup de cada algoritmo respecto al secuencial con -O0",
+  labs(title = "Speedup respecto al algoritmo secuencial",
        x = "N (Tamaño del problema)",
        y = "Veces más rápido") +
   theme_bw() +

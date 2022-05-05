@@ -1,5 +1,4 @@
 # Compilamos cada uno de los programas
-# create array arr of strings str1 str2 str3
 
 gcc -Wall -O0 -o algSecuencial_O0.o algSecuencial.c utils.c
 if [ $? -ne 0 ]
@@ -17,24 +16,10 @@ then
     exit 1
 fi
 
-gcc -Wall -O0 -o algSecuencialOptimizadoUnrollingv1_O0.o algSecuencialOptimizadoUnrollingv1.c utils.c
-if [ $? -ne 0 ]
-then
-    echo "Error al compilar algoritmo secuencial optimizado por unrolling v1"
-    exit 1
-fi
-
-gcc -Wall -O0 -o algSecuencialOptimizadoUnrollingv2_O0.o algSecuencialOptimizadoUnrollingv2.c utils.c
-if [ $? -ne 0 ]
-then
-    echo "Error al compilar algoritmo secuencial optimizado por unrolling v3"
-    exit 1
-fi
-
 gcc -Wall -O0 -o algSecuencialOptimizadoUnrollingv3_O0.o algSecuencialOptimizadoUnrollingv3.c utils.c
 if [ $? -ne 0 ]
 then
-    echo "Error al compilar algoritmo secuencial optimizado por unrolling v2"
+    echo "Error al compilar algoritmo secuencial optimizado por unrolling v3"
     exit 1
 fi
 gcc -Wall -O2 -o algSecuencialOptimizadoUnrollingv3_O2.o algSecuencialOptimizadoUnrollingv3.c utils.c
@@ -68,14 +53,7 @@ then
 fi
 
 gcc -Wall -O2 -o algAVX2_O2.o algAVX2.c utils.c -mavx2
-
-gcc -Wall -O0 -o algAVX2store_O0.o algAVX2store.c utils.c -mavx2
-if [ $? -ne 0 ]
-then
-    echo "Error al compilar algoritmo de AVX2 con store"
-    exit 1
-fi
-gcc -Wall -O2 -o algAVX2store_O2.o algAVX2.c utils.c -mavx2
+gcc -Wall -O3 -o algAVX2_O3.o algAVX2.c utils.c -mavx2
 
 gcc -Wall -O0 -o algOMP_O0.o algOMP.c utils.c -fopenmp
 if [ $? -ne 0 ]
@@ -93,9 +71,8 @@ then
     echo "Error al compilar algoritmo de AVX2 + OMP"
     exit 1
 fi
-
 gcc -Wall -O2 -o algAVX2_OMP_O2.o algAVX2_OMP.c utils.c -fopenmp -mavx2
-gcc -Wall -O3 -o algAVX2_OMP_O3.o algAVX2_OMP.c utils.c -fopenmp -mavx
+gcc -Wall -O3 -o algAVX2_OMP_O3.o algAVX2_OMP.c utils.c -fopenmp -mavx2
 
 # Reseteamos el archivo de salida
 if [ -f salida.txt ]
@@ -115,31 +92,35 @@ while [ $count -lt $MAX_TESTS ]; do
     for N in ${valoresN[@]}; do  
         # get random seed
         SEED=$(($RANDOM))
-        ./algSecuencial_O0.o $N $SEED salida.txt
+        #./algSecuencial_O0.o $N $SEED salida.txt
         #./algSecuencialOptimizadoDefinitivo_O0.o $N $SEED salida.txt
         #./algSecuencialOptOperaciones_O0.o $N $SEED salida.txt
         #./algSecuencial_O2.o $N $SEED salida.txt
-        #./algSecuencial_O3.o $N $SEED salida.txt          
+        ./algSecuencial_O3.o $N $SEED salida.txt          
         #./algSecuencialOptimizadoOrden_O0.o $N $SEED salida.txt   
         #./algSecuencialOptimizadoUnrollingv2_O0.o $N $SEED salida.txt
         #./algSecuencialOptimizadoUnrollingv2_O2.o $N $SEED salida.txt
         #./algSecuencialOptimizadoUnrollingv2_O3.o $N $SEED salida.txt   
-        ./algSecuencialOptimizadoTiling_O0.o 4 4 $N $SEED salida.txt
-        ./algSecuencialOptimizadoTiling_O0.o 16 16 $N $SEED salida.txt
-        ./algSecuencialOptimizadoTiling_O0.o 64 64 $N $SEED salida.txt
-        ./algSecuencialOptimizadoTiling_O0.o 256 256 $N $SEED salida.txt
+        ./algSecuencialOptimizadoUnrollingv3_O0.o $N $SEED salida.txt   
+        #./algSecuencialOptimizadoTiling_O0.o 4 4 $N $SEED salida.txt
+        #./algSecuencialOptimizadoTiling_O0.o 16 16 $N $SEED salida.txt
+        #./algSecuencialOptimizadoTiling_O0.o 64 64 $N $SEED salida.txt
+        #./algSecuencialOptimizadoTiling_O0.o 256 256 $N $SEED salida.txt
         #./algSecuencialOptimizadoTiling_O0.o 8 $N $SEED salida.txt
         #./algSecuencialOptimizadoTiling_O0.o 16 $N $SEED salida.txt   
         #./algAVX2store_O0.o $N $SEED salida.txt
         #./algAVX2store_O2.o $N $SEED salida.txt
+        ./algAVX2_O0.o $N $SEED salida.txt
         #./algOMP_O0.o 2 $N $SEED salida.txt
         #./algOMP_O0.o 4 $N $SEED salida.txt
+        #./algOMP_O0v2.o 4 $N $SEED salida.txt
+        #./algOMPXiana_O0.o 4 $N $SEED salida.txt
         #./algOMP_O2.o 2 $N $SEED salida.txt
-        #./algOMP_O2.o 4 $N $SEED salida.txt
+        ./algOMP_O0.o 4 $N $SEED salida.txt
         #./algAVX2_OMP_O0.o 2 $N $SEED salida.txt
-        #./algAVX2_OMP_O0.o 4 $N $SEED salida.txt
+        # ./algAVX2_OMP_O0.o 4 $N $SEED salida.txt
         #./algAVX2_OMP_O2.o 2 $N $SEED salida.txt
-        #./algAVX2_OMP_O2.o 4 $N $SEED salida.txt
+        #./algAVX2_OMP_O0.o 4 $N $SEED salida.txt
     done
     (( count++ ))
     echo "Tests done ($count / $MAX_TESTS)"

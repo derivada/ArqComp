@@ -12,6 +12,8 @@
                 "${fileDirname}/${fileBasenameNoExtension}",
                 "-O0",
                 "utils.c",
+                "-mavx2",
+                "-fopenmp"
             ],
             "options": {
                 "cwd": "${fileDirname}"

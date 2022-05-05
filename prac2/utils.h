@@ -19,6 +19,7 @@ typedef struct
 
 // Funciones de inicializacion y liberación de memoria
 void inicializacion(datos *in, int N, int semilla);
+void inicializacion2(datos *in, int N, int semilla);
 void inicializacionAVX(datos *in, int N, int semilla);
 void liberarMemoria (datos in, int N);
 tiempos medirTiempoEjecucion (int (*funcion)(datos), datos data);

@@ -10,8 +10,6 @@
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}",
             "args": [
-                "2",
-                "2",
                 "8",
                 "1",
                 "salida.txt"

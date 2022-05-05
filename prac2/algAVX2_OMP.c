@@ -44,92 +44,67 @@ int main(int argc, const char *argv[])
     exit(EXIT_SUCCESS);
 }
 
-void cargarB(datos in)
-{
-    double *aux = (double *)malloc(N * 8 * sizeof(double));
-    for (int i = 0; i < 8; i++)
-    {
-        in.b[i] = aux + N * sizeof(double);
-    }
-}
-
 int algoritmoAVX2_OMP(datos in)
 {
     __m256d scalar2 = _mm256_set1_pd(2);
     __m256d c0 = _mm256_load_pd(&in.c[0]);
     __m256d c4 = _mm256_load_pd(&in.c[4]);
-    // bordes
     int newN = N;
-    if (N % 4 != 0)
+    if (newN % 4 != 0)
     {
-        newN = N + (4 - N % 4);
+        newN = newN + (4 - N % 4);
     }
 #pragma omp parallel for
     for (int i = 0; i < newN; i++)
     {
-        // in.a[i][k] * 2
-        __m256d a0 = _mm256_load_pd(&in.a[i][0]);
-        __m256d a4 = _mm256_load_pd(&in.a[i][4]);
-        a0 = _mm256_mul_pd(a0, scalar2);
-        a4 = _mm256_mul_pd(a4, scalar2);
-        int j;
-        for (j = 0; j < newN; j += 4)
+        __m256d a0 = _mm256_mul_pd(_mm256_load_pd(&in.a[i][0]), scalar2);
+        __m256d a4 = _mm256_mul_pd(_mm256_load_pd(&in.a[i][4]), scalar2);
+        int j = 0, nextJ = 1;
+        for (; j < newN; j += 2, nextJ += 2)
         {
-            // in.d[i][j] += 2 * in.a[i][k] * (in.b[k][j] - in.c[k]);
-            __m256d b0_j0 = _mm256_set_pd(in.b[3][j], in.b[2][j], in.b[1][j], in.b[0][j]);
-            __m256d b4_j0 = _mm256_set_pd(in.b[7][j], in.b[6][j], in.b[5][j], in.b[4][j]);
-            __m256d d_j0 = _mm256_add_pd(
-                _mm256_mul_pd(a0, _mm256_sub_pd(b0_j0, c0)),
-                _mm256_mul_pd(a4, _mm256_sub_pd(b4_j0, c4)));
-
-            int a = j + 1;
-            __m256d b0_j1 = _mm256_set_pd(in.b[3][a], in.b[2][a], in.b[1][a], in.b[0][a]);
-            __m256d b4_j1 = _mm256_set_pd(in.b[7][a], in.b[6][a], in.b[5][a], in.b[4][a]);
-            __m256d d_j1 = _mm256_add_pd(
-                _mm256_mul_pd(a0, _mm256_sub_pd(b0_j1, c0)),
-                _mm256_mul_pd(a4, _mm256_sub_pd(b4_j1, c4)));
-
-            // Reducción y guardado en d
-            __m256d sum_j01 = _mm256_hadd_pd(d_j0, d_j1);
-            __m128d result_j01 = _mm_add_pd(_mm256_extractf128_pd(sum_j01, 0), _mm256_extractf128_pd(sum_j01, 1));
-            in.d[i][j] = ((double *)&result_j01)[0];
-            in.d[i][a] = ((double *)&result_j01)[1];
-
-            // UNROLLING DE 4
-            int b = j + 2;
-            __m256d b0_j2 = _mm256_set_pd(in.b[3][b], in.b[2][b], in.b[1][b], in.b[0][b]);
-            __m256d b4_j2 = _mm256_set_pd(in.b[7][b], in.b[6][b], in.b[5][b], in.b[4][b]);
-            __m256d d_j2 = _mm256_add_pd(
-                _mm256_mul_pd(a0, _mm256_sub_pd(b0_j2, c0)),
-                _mm256_mul_pd(a4, _mm256_sub_pd(b4_j2, c4)));
-
-            int c = j + 3;
-            __m256d b0_j3 = _mm256_set_pd(in.b[3][c], in.b[2][c], in.b[1][c], in.b[0][c]);
-            __m256d b4_j3 = _mm256_set_pd(in.b[7][c], in.b[6][c], in.b[5][c], in.b[4][c]);
-            __m256d d_j3 = _mm256_add_pd(
-                _mm256_mul_pd(a0, _mm256_sub_pd(b0_j3, c0)),
-                _mm256_mul_pd(a4, _mm256_sub_pd(b4_j3, c4)));
-
-            // Reducción y guardado en d
-            __m256d sum_j23 = _mm256_hadd_pd(d_j2, d_j3);
-            __m128d result_j23 = _mm_add_pd(_mm256_extractf128_pd(sum_j23, 0), _mm256_extractf128_pd(sum_j23, 1));
-            in.d[i][b] = ((double *)&result_j23)[0];
-            in.d[i][c] = ((double *)&result_j23)[1];
+            __m256d sum_j01 = _mm256_hadd_pd(_mm256_add_pd(
+                                                 _mm256_mul_pd(a0, _mm256_sub_pd(_mm256_set_pd(in.b[3][j], in.b[2][j], in.b[1][j], in.b[0][j]), c0)),
+                                                 _mm256_mul_pd(a4, _mm256_sub_pd(_mm256_set_pd(in.b[7][j], in.b[6][j], in.b[5][j], in.b[4][j]), c4))),
+                                             _mm256_add_pd(
+                                                 _mm256_mul_pd(a0, _mm256_sub_pd(_mm256_set_pd(in.b[3][nextJ], in.b[2][nextJ], in.b[1][nextJ], in.b[0][nextJ]), c0)),
+                                                 _mm256_mul_pd(a4, _mm256_sub_pd(_mm256_set_pd(in.b[7][nextJ], in.b[6][nextJ], in.b[5][nextJ], in.b[4][nextJ]), c4))));
+            _mm_stream_pd(&in.d[i][j], _mm_add_pd(_mm256_extractf128_pd(sum_j01, 0), _mm256_extractf128_pd(sum_j01, 1)));
+            j += 2, nextJ += 2;
+            __m256d sum_j23 = _mm256_hadd_pd(_mm256_add_pd(
+                                                 _mm256_mul_pd(a0, _mm256_sub_pd(_mm256_set_pd(in.b[3][j], in.b[2][j], in.b[1][j], in.b[0][j]), c0)),
+                                                 _mm256_mul_pd(a4, _mm256_sub_pd(_mm256_set_pd(in.b[7][j], in.b[6][j], in.b[5][j], in.b[4][j]), c4))),
+                                             _mm256_add_pd(
+                                                 _mm256_mul_pd(a0, _mm256_sub_pd(_mm256_set_pd(in.b[3][nextJ], in.b[2][nextJ], in.b[1][nextJ], in.b[0][nextJ]), c0)),
+                                                 _mm256_mul_pd(a4, _mm256_sub_pd(_mm256_set_pd(in.b[7][nextJ], in.b[6][nextJ], in.b[5][nextJ], in.b[4][nextJ]), c4))));
+            _mm_stream_pd(&in.d[i][j], _mm_add_pd(_mm256_extractf128_pd(sum_j23, 0), _mm256_extractf128_pd(sum_j23, 1)));
         }
     }
 
 #pragma omp parallel for
     for (int i = 0; i < N; i++)
     {
-        in.e[i] = in.d[in.ind[i]][in.ind[i]] / 2;
+        int index = in.ind[i];
+        in.e[i] = in.d[index][index] / 2;
 #pragma omp atomic
         in.f += in.e[i];
     }
 
     if (DEBUG_MSG)
-        printf("Resultado del algoritmo optimizado con OpenMP + AVX: f = %4lf\n", in.f);
-
-    // accesos = (9*8*N*N) + (N*5*2)    // Inicializamos el contador
+    {
+        if (DEBUG_MSG > 1)
+        {
+            for (int i = 0; i < N; i++)
+            {
+                for (int j = 0; j < N - 1; j++)
+                {
+                    printf("%4lf, ", in.d[i][j]);
+                }
+                printf("%4lf\n", in.d[i][N - 1]);
+            }
+        }
+        printf("\n");
+        printf("Resultado del algoritmo avx+openmp: f = %4lf\n", in.f);
+    }
     int accesos = N * (72 * N + 10);
     return accesos;
 }

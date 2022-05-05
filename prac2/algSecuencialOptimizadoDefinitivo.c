@@ -47,9 +47,7 @@ int algSecOptFinal(datos in)
      * 2. Unrolling del bucle de las k
      */
     for (int i = 0; i < N; i++)
-    { 
-        in.f += in.a[i][0] * (in.b[0][i] - in.c[0]) +  in.a[i][1] * (in.b[1][i] - in.c[1]) +  in.a[i][2] * (in.b[2][i] - in.c[2]) +  in.a[i][3] * (in.b[3][i] - in.c[3]) +  in.a[i][4] * (in.b[4][i] - in.c[4]) +  in.a[i][5] * (in.b[5][i] - in.c[5]) +  in.a[i][6] * (in.b[6][i] - in.c[6]) +  in.a[i][7] * (in.b[7][i] - in.c[7]);
-    }
+        in.f += in.a[i][0] * (in.b[0][i] - in.c[0]) + in.a[i][1] * (in.b[1][i] - in.c[1]) + in.a[i][2] * (in.b[2][i] - in.c[2]) + in.a[i][3] * (in.b[3][i] - in.c[3]) + in.a[i][4] * (in.b[4][i] - in.c[4]) + in.a[i][5] * (in.b[5][i] - in.c[5]) + in.a[i][6] * (in.b[6][i] - in.c[6]) + in.a[i][7] * (in.b[7][i] - in.c[7]);
 
     if (DEBUG_MSG)
         printf("Resultado del algoritmo optimizado definitivo: f = %4lf\n", in.f);
