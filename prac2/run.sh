@@ -16,23 +16,6 @@ then
     exit 1
 fi
 
-<<<<<<< HEAD
-=======
-gcc -Wall -O0 -o algSecuencialOptimizadoUnrollingv1_O0.o algSecuencialOptimizadoUnrollingv1.c utils.c
-if [ $? -ne 0 ]
-then
-    echo "Error al compilar algoritmo secuencial optimizado por unrolling v1"
-    exit 1
-fi
-
-gcc -Wall -O0 -o algSecuencialOptimizadoUnrollingv2_O0.o algSecuencialOptimizadoUnrollingv2.c utils.c
-if [ $? -ne 0 ]
-then
-    echo "Error al compilar algoritmo secuencial optimizado por unrolling v2"
-    exit 1
-fi
-
->>>>>>> c9a88be55f61185eff03f0b243d3954451209d44
 gcc -Wall -O0 -o algSecuencialOptimizadoUnrollingv3_O0.o algSecuencialOptimizadoUnrollingv3.c utils.c
 if [ $? -ne 0 ]
 then
