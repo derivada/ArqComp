@@ -4,7 +4,7 @@
 #include <time.h>
 #include "utils.h"
 
-#define ALG_NAME "OptUnroll_V3"
+#define ALG_NAME "OptUnroll_V4"
 FILE *outputFile;
 
 // Funciones de leer parámetros y cerrar archivo de salida
@@ -12,7 +12,7 @@ void leerParametros(int argc, const char *argv[]);
 void cerrarArchivoSalida(int status, void *args);
 
 // Algoritmo a usar
-int algSecOptUnroll3(datos in);
+int algSecOptUnroll4(datos in);
 
 // Variables del experimento
 int N, semilla;
@@ -29,7 +29,7 @@ int main(int argc, const char *argv[])
     inicializacion(casoPrueba, N, semilla);
 
     // Ejecutamos el algoritmo midiendo tiempo
-    results = medirTiempoEjecucion(algSecOptUnroll3, *casoPrueba);
+    results = medirTiempoEjecucion(algSecOptUnroll4, *casoPrueba);
 
     // Registramos los resultados
     fprintf(outputFile, "%d,%s (%s),%d,%lf,%lf\n",
@@ -40,7 +40,7 @@ int main(int argc, const char *argv[])
     exit(EXIT_SUCCESS);
 }
 
-int algSecOptUnroll3(datos in)
+int algSecOptUnroll4(datos in)
 {
     /**
      * OPTIMIZACIONES REALIZADAS
@@ -72,14 +72,26 @@ int algSecOptUnroll3(datos in)
         }
     }
 
-    for (int i = 0; i < N; i++)
-    {                                             // N iteraciones
-        in.e[i] = in.d[in.ind[i]][in.ind[i]] / 2; // 5 accesos
-        in.f += in.e[i];                          // 2 accesos
+    int i = 0;
+    for (; i < newN; i+=4) {
+        in.e[i] = in.d[in.ind[i]][in.ind[i]] / 2;
+        int a = i+1;
+        in.e[a] = in.d[in.ind[a]][in.ind[a]] / 2;
+        int b = i+2;
+        in.e[b] = in.d[in.ind[b]][in.ind[b]] / 2;
+        int c = i+3;
+        in.e[c] = in.d[in.ind[c]][in.ind[c]] / 2;
+        in.f += in.e[i] + in.e[a] + in.e[b] + in.e[c];
+    }
+
+    while (i < N) {
+        in.e[i] = in.d[in.ind[i]][in.ind[i]] / 2;  
+        in.f += in.e[i];
+        i++;
     }
 
     if (DEBUG_MSG)
-        printf("Resultado del algoritmo secuencial por unrolling (v3): f = %4lf\n", in.f);
+        printf("Resultado del algoritmo secuencial por unrolling (v4): f = %4lf\n", in.f);
 
     // accesos = (9*8*N*N) + (N*5*2)    // Inicializamos el contador
     int accesos = N * (72 * N + 10);
