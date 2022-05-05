@@ -121,21 +121,11 @@ while [ $count -lt $MAX_TESTS ]; do
         #./algSecuencialOptOperaciones_O0.o $N $SEED salida.txt
         #./algSecuencial_O2.o $N $SEED salida.txt
         ./algSecuencial_O3.o $N $SEED salida.txt          
-<<<<<<< HEAD
         #./algSecuencialOptimizadoOrden_O0.o $N $SEED salida.txt   
         #./algSecuencialOptimizadoUnrollingv2_O0.o $N $SEED salida.txt
         #./algSecuencialOptimizadoUnrollingv2_O2.o $N $SEED salida.txt
         #./algSecuencialOptimizadoUnrollingv2_O3.o $N $SEED salida.txt   
         ./algSecuencialOptimizadoUnrollingv3_O0.o $N $SEED salida.txt   
-=======
-        #./algSecuencialOptimizadoOrden_O0.o $N $SEED salida.txt
-        ./algSecuencialOptimizadoUnrollingv1_O0.o $N $SEED salida.txt   
-        ./algSecuencialOptimizadoUnrollingv2_O0.o $N $SEED salida.txt
-        ./algSecuencialOptimizadoUnrollingv3_O0.o $N $SEED salida.txt
-        #./algSecuencialOptimizadoUnrollingv3_O2.o $N $SEED salida.txt
-        #./algSecuencialOptimizadoUnrollingv3_O3.o $N $SEED salida.txt
-        ./algSecuencialOptimizadoUnrollingv4_O0.o $N $SEED salida.txt
->>>>>>> c9a88be55f61185eff03f0b243d3954451209d44
         #./algSecuencialOptimizadoTiling_O0.o 4 4 $N $SEED salida.txt
         #./algSecuencialOptimizadoTiling_O0.o 16 16 $N $SEED salida.txt
         #./algSecuencialOptimizadoTiling_O0.o 64 64 $N $SEED salida.txt
