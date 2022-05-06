@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}",
             "args": [
-                "8",
+                "250s",
                 "1",
                 "salida.txt"
             ],
