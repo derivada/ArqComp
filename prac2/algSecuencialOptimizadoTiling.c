@@ -12,7 +12,7 @@ void leerParametros(int argc, const char *argv[]);
 void cerrarArchivoSalida(int status, void *args);
 
 // Algoritmo a usar
-int algSecOptTiling(datos in);
+void algSecOptTiling(datos in);
 
 // Variables del experimento
 int N, semilla, rowBlockSize, colBlockSize;
@@ -32,16 +32,23 @@ int main(int argc, const char *argv[])
     results = medirTiempoEjecucion(algSecOptTiling, *casoPrueba);
 
     // Registramos los resultados
-    fprintf(outputFile, "%d,%s (tile = %dx%d) (%s),%d,%lf, %lf\n",
-            N, ALG_NAME, rowBlockSize, colBlockSize, optimizationFlag, results.ck, results.ck_medios, results.microsegundos);
+    fprintf(outputFile, "%d,%s (tile = %dx%d) (%s),%d,%lf\n",
+            N, ALG_NAME, rowBlockSize, colBlockSize, optimizationFlag, results.ciclos, results.microsegundos);
 
     // Liberación de mi negro jerónimo
     liberarMemoria(*casoPrueba, N);
     exit(EXIT_SUCCESS);
 }
 
-int algSecOptTiling(datos in)
+void algSecOptTiling(datos in)
 {
+    double **d = (double **)malloc(N * sizeof(double *));
+    for (int i = 0; i < N; i++)
+        d[i] = (double *)malloc(N * sizeof(double));
+
+    double *e = (double *)malloc(N * sizeof(double));
+    double f = 0.0;
+
     for (int k = 0; k < 8; k++)
         for (int j = 0; j < N; j++)
             in.b[k][j] -= in.c[k];
@@ -71,10 +78,10 @@ int algSecOptTiling(datos in)
                         acc10 += in.b[k][j + 0] * in.a[i + 1][k];
                         acc11 += in.b[k][j + 1] * in.a[i + 1][k];
                     }
-                    in.d[i + 0][j + 0] = acc00 * 2;
-                    in.d[i + 0][j + 1] = acc01 * 2;
-                    in.d[i + 1][j + 0] = acc10 * 2;
-                    in.d[i + 1][j + 1] = acc11 * 2;
+                    d[i + 0][j + 0] = acc00 * 2;
+                    d[i + 0][j + 1] = acc01 * 2;
+                    d[i + 1][j + 0] = acc10 * 2;
+                    d[i + 1][j + 1] = acc11 * 2;
                 }
             }
         }
@@ -82,9 +89,15 @@ int algSecOptTiling(datos in)
 
     for (int i = 0; i < N; i++)
     {                                             // N iteraciones
-        in.e[i] = in.d[in.ind[i]][in.ind[i]] / 2; // 5 accesos
-        in.f += in.e[i];                          // 2 accesos
+        e[i] = d[in.ind[i]][in.ind[i]] / 2; // 5 accesos
+        f += e[i];                          // 2 accesos
     }
+
+    for (int i = 0; i < N; i++)
+        free(d[i]);
+    free(d);
+    free(e);
+
     if (DEBUG_MSG)
     {
         if (DEBUG_MSG > 1)
@@ -93,19 +106,15 @@ int algSecOptTiling(datos in)
             {
                 for (int j = 0; j < N - 1; j++)
                 {
-                    printf("%4lf, ", in.d[i][j]);
+                    printf("%4lf, ", d[i][j]);
                 }
-                printf("%4lf\n", in.d[i][N - 1]);
+                printf("%4lf\n", d[i][N - 1]);
             }
             printf("\n");
         }
         printf("Resultado del algoritmo secuencial por tiling (bs = %dx%d): f = %4lf\n",
-               rowBlockSize, colBlockSize, in.f);
+               rowBlockSize, colBlockSize, f);
     }
-
-    // accesos = (9*8*N*N) + (N*5*2)    // Inicializamos el contador
-    int accesos = N * (72 * N + 10);
-    return accesos;
 }
 
 void leerParametros(int argc, const char *argv[])

@@ -6,26 +6,21 @@
 
 struct timespec start, stop;
 
-tiempos medirTiempoEjecucion(int (*funcion)(datos), datos data)
+tiempos medirTiempoEjecucion(void (*funcion)(datos), datos data)
 {
     tiempos tiempos;
-    clock_gettime(CLOCK_REALTIME, &start);
     start_counter();
-    tiempos.accesos = (*funcion)(data);
-    tiempos.ck = get_counter();
+    clock_gettime(CLOCK_REALTIME, &start);
+    (*funcion)(data);
+    tiempos.ciclos = get_counter();
     clock_gettime(CLOCK_REALTIME, &stop);
     tiempos.microsegundos = (stop.tv_sec - start.tv_sec) * 1e6 + (stop.tv_nsec - start.tv_nsec) / 1e3;
-    tiempos.ck_medios = ((double)tiempos.ck / tiempos.accesos);
     return tiempos;
 }
 
 void inicializacion(datos *in, int N, int semilla)
 {
     srand(semilla);
-    in->d = (double **)malloc(N * sizeof(double *));
-
-    for (int i = 0; i < N; i++)
-        (in->d)[i] = (double *)calloc(N, sizeof(double));
     in->a = (double **)malloc(N * sizeof(double *));
     for (int i = 0; i < N; i++)
         in->a[i] = (double *)malloc(sizeof(double) * 8);
@@ -33,10 +28,7 @@ void inicializacion(datos *in, int N, int semilla)
     for (int i = 0; i < 8; i++)
         in->b[i] = (double *)malloc(sizeof(double) * N);
     in->c = (double *)malloc(8 * sizeof(double));
-    in->e = (double *)malloc(N * sizeof(double));
-    memset(in->e, 0, N * sizeof(double));
     in->ind = (int *)malloc(N * sizeof(int));
-    in->f = 0;
 
     for (int i = 0; i < N; i++)
     {
@@ -67,12 +59,7 @@ void inicializacionAVX(datos *in, int N, int semilla)
     {
         N = N + (4 - N % 4);
     }
-    in->d = (double **)malloc(N * sizeof(double *));
-    for (int i = 0; i < N; i++)
-    {
-        (in->d)[i] = (double *)aligned_alloc(32, sizeof(double) * N);
-        memset(in->d[i], 0, N * sizeof(double));
-    }
+
     in->a = (double **)malloc(N * sizeof(double *));
     for (int i = 0; i < N; i++)
         in->a[i] = (double *)aligned_alloc(32, sizeof(double) * 8);
@@ -80,10 +67,7 @@ void inicializacionAVX(datos *in, int N, int semilla)
     for (int i = 0; i < 8; i++)
         in->b[i] = (double *)aligned_alloc(32, sizeof(double) * N);
     in->c = (double *)aligned_alloc(32, 8 * sizeof(double));
-    in->e = (double *)aligned_alloc(32, N * sizeof(double));
-    memset(in->e, 0, N * sizeof(double));
     in->ind = (int *)aligned_alloc(32, N * sizeof(int));
-    in->f = 0;
 
     for (int i = 0; i < innerN; i++)
     {
@@ -111,15 +95,12 @@ void liberarMemoria(datos in, int N)
     for (int i = 0; i < N; i++)
     {
         free(in.a[i]);
-        free(in.d[i]);
         if (i < 8)
             free(in.b[i]);
     }
     free(in.a);
     free(in.b);
     free(in.c);
-    free(in.d);
-    free(in.e);
     free(in.ind);
 }
 

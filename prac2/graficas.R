@@ -46,7 +46,7 @@ plotCiclos = ggplot(data = datosCiclos, mapping = aes(x = N, y = ck)) +
 ggsave("graficaCiclos.png", plotCiclos, width = 15, height = 10)
 
 datosSpeedup = datosTiempo
-algBase = "Sec (O3)"
+algBase = "Sec (O2)"
 tiemposAlgBase = datosSpeedup[datosSpeedup$alg == algBase, ]
 datosSpeedup$t_us = apply(datosSpeedup, 1, function(x) {
   x[3] = tiemposAlgBase$t_us[tiemposAlgBase$N == as.numeric(trimws(x[1], "both"))] / as.numeric(x[3])

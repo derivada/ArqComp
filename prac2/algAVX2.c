@@ -13,7 +13,7 @@ void leerParametros(int argc, const char *argv[]);
 void cerrarArchivoSalida(int status, void *args);
 
 // Algoritmo a usar
-int algoritmoAVX2store(datos in);
+void algoritmoAVX2(datos in);
 
 // Variables del experimento
 int N, semilla;
@@ -31,11 +31,11 @@ int main(int argc, const char *argv[])
     inicializacionAVX(casoPrueba, N, semilla);
 
     // Ejecutamos el algoritmo midiendo tiempo
-    results = medirTiempoEjecucion(algoritmoAVX2store, *casoPrueba);
+    results = medirTiempoEjecucion(algoritmoAVX2, *casoPrueba);
 
     // Registramos los resultados
-    fprintf(outputFile, "%d,%s (%s),%d,%lf,%lf\n",
-            N, ALG_NAME, optimizationFlag, results.ck, results.ck_medios, results.microsegundos);
+    fprintf(outputFile, "%d,%s (%s),%d,%lf\n",
+            N, ALG_NAME, optimizationFlag, results.ciclos, results.microsegundos);
 
     // Liberación de mi negro jerónimo
     liberarMemoria(*casoPrueba, N);
@@ -51,18 +51,23 @@ void cargarB(datos in)
     }
 }
 
-int algoritmoAVX2store(datos in)
+void algoritmoAVX2(datos in)
 {
+    int newN = N;
+    if (newN % 4 != 0)
+        newN = newN + (4 - N % 4);
+
+    double **d = (double **)malloc(N * sizeof(double *));
+    double *e = (double *)aligned_alloc(32, sizeof(double) * newN);
+    double f = 0.0;
+
     __m256d scalar2 = _mm256_set1_pd(2);
     __m256d c0 = _mm256_load_pd(&in.c[0]);
     __m256d c4 = _mm256_load_pd(&in.c[4]);
-    int newN = N;
-    if (newN % 4 != 0)
+
+    for (int i = 0; i < N; i++)
     {
-        newN = newN + (4 - N % 4);
-    }
-    for (int i = 0; i < newN; i++)
-    {
+        d[i] = (double *)aligned_alloc(32, sizeof(double) * newN);
         __m256d a0 = _mm256_mul_pd(_mm256_load_pd(&in.a[i][0]), scalar2);
         __m256d a4 = _mm256_mul_pd(_mm256_load_pd(&in.a[i][4]), scalar2);
         int j = 0, nextJ = 1;
@@ -74,7 +79,7 @@ int algoritmoAVX2store(datos in)
                                              _mm256_add_pd(
                                                  _mm256_mul_pd(a0, _mm256_sub_pd(_mm256_set_pd(in.b[3][nextJ], in.b[2][nextJ], in.b[1][nextJ], in.b[0][nextJ]), c0)),
                                                  _mm256_mul_pd(a4, _mm256_sub_pd(_mm256_set_pd(in.b[7][nextJ], in.b[6][nextJ], in.b[5][nextJ], in.b[4][nextJ]), c4))));
-            _mm_stream_pd(&in.d[i][j], _mm_add_pd(_mm256_extractf128_pd(sum_j01, 0), _mm256_extractf128_pd(sum_j01, 1)));
+            _mm_stream_pd(&d[i][j], _mm_add_pd(_mm256_extractf128_pd(sum_j01, 0), _mm256_extractf128_pd(sum_j01, 1)));
             j += 2, nextJ += 2;
             __m256d sum_j23 = _mm256_hadd_pd(_mm256_add_pd(
                                                  _mm256_mul_pd(a0, _mm256_sub_pd(_mm256_set_pd(in.b[3][j], in.b[2][j], in.b[1][j], in.b[0][j]), c0)),
@@ -82,17 +87,20 @@ int algoritmoAVX2store(datos in)
                                              _mm256_add_pd(
                                                  _mm256_mul_pd(a0, _mm256_sub_pd(_mm256_set_pd(in.b[3][nextJ], in.b[2][nextJ], in.b[1][nextJ], in.b[0][nextJ]), c0)),
                                                  _mm256_mul_pd(a4, _mm256_sub_pd(_mm256_set_pd(in.b[7][nextJ], in.b[6][nextJ], in.b[5][nextJ], in.b[4][nextJ]), c4))));
-            _mm_stream_pd(&in.d[i][j], _mm_add_pd(_mm256_extractf128_pd(sum_j23, 0), _mm256_extractf128_pd(sum_j23, 1)));
+            _mm_stream_pd(&d[i][j], _mm_add_pd(_mm256_extractf128_pd(sum_j23, 0), _mm256_extractf128_pd(sum_j23, 1)));
         }
     }
 
     for (int i = 0; i < N; i++)
     {
         int index = in.ind[i];
-        in.e[i] = in.d[index][index] / 2;
-        in.f += in.e[i];
+        e[i] = d[index][index] / 2;
+        free(d[index]);
+        f += e[i];
     }
-
+    free(d);
+    free(e);
+    
     if (DEBUG_MSG)
     {
         if (DEBUG_MSG > 1)
@@ -101,16 +109,13 @@ int algoritmoAVX2store(datos in)
             {
                 for (int j = 0; j < N - 1; j++)
                 {
-                    printf("%4lf, ", in.d[i][j]);
+                    printf("%4lf, ", d[i][j]);
                 }
-                printf("%4lf\n", in.d[i][N - 1]);
+                printf("%4lf\n", d[i][N - 1]);
             }
         }
-        printf("\n");
-        printf("Resultado del algoritmo avx+openmp: f = %4lf\n", in.f);
+        printf("Resultado del algoritmo avx: f = %4lf\n", f);
     }
-    int accesos = N * (72 * N + 10);
-    return accesos;
 }
 
 void leerParametros(int argc, const char *argv[])

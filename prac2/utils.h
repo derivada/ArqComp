@@ -5,15 +5,13 @@
 
 typedef struct
 {
-    double **a, **b, *c, **d, *e, f;
+    double **a, **b, *c;
     int *ind;
 } datos;
 
 typedef struct
 {
-    int ck;
-    int accesos;
-    double ck_medios;
+    int ciclos;
     double microsegundos;
 } tiempos;
 
@@ -22,7 +20,7 @@ void inicializacion(datos *in, int N, int semilla);
 void inicializacion2(datos *in, int N, int semilla);
 void inicializacionAVX(datos *in, int N, int semilla);
 void liberarMemoria (datos in, int N);
-tiempos medirTiempoEjecucion (int (*funcion)(datos), datos data);
+tiempos medirTiempoEjecucion (void (*funcion)(datos), datos data);
 double get_counter();
 void start_counter();
 

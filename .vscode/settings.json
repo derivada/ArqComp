@@ -4,6 +4,8 @@
         "random": "c",
         "limits": "c",
         "algorithm": "c",
-        "*.old": "c"
+        "*.old": "c",
+        "string.h": "c",
+        "atomic": "c"
     }
 }

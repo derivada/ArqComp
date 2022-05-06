@@ -12,7 +12,7 @@ void leerParametros(int argc, const char *argv[]);
 void cerrarArchivoSalida(int status, void *args);
 
 // Algoritmo a usar
-int algoritmoSecuencial(datos in);
+void algSecOptOrder(datos in);
 
 // Variables del experimento
 int N, semilla;
@@ -28,28 +28,38 @@ int main(int argc, const char *argv[])
     inicializacion(casoPrueba, N, semilla);
 
     // Ejecutamos el algoritmo midiendo tiempo
-    results = medirTiempoEjecucion(algoritmoSecuencial, *casoPrueba);
+    results = medirTiempoEjecucion(algSecOptOrder, *casoPrueba);
 
     // Registramos los resultados
-    fprintf(outputFile, "%d,%s (%s),%d,%lf,%lf\n",
-            N, ALG_NAME, optimizationFlag, results.ck, results.ck_medios, results.microsegundos);
+    fprintf(outputFile, "%d,%s (%s),%d,%lf\n",
+            N, ALG_NAME, optimizationFlag, results.ciclos, results.microsegundos);
 
     // Liberación de mi negro jerónimo
     liberarMemoria(*casoPrueba, N);
     exit(EXIT_SUCCESS);
 }
 
-int algoritmoSecuencial(datos in)
+void algSecOptOrder(datos in)
 {
-    for (int i = 0; i < N; i++)                                    // N iteraciones
-        for (int j = 0; j < N; j++)                                // N iteraciones
-            for (int k = 0; k < 8; k++)                            // 8 iteraciones
-                in.d[i][j] += in.a[i][k] * (in.b[k][j] - in.c[k]); // 9 accesos
+    double **d = (double **)malloc(N * sizeof(double *));
+    for (int i = 0; i < N; i++)
+        d[i] = (double *)malloc(N * sizeof(double));
+
+    double f = 0.0;
+
+    for (int i = 0; i < N; i++)                                 // N iteraciones
+        for (int j = 0; j < N; j++)                             // N iteraciones
+            for (int k = 0; k < 8; k++)                         // 8 iteraciones
+                d[i][j] += in.a[i][k] * (in.b[k][j] - in.c[k]); // 9 accesos
 
     for (int i = 0; i < N; i++) // N iteraciones
     {
-        in.f += in.d[i][i];
+        f += d[i][i];
     }
+
+    for (int i = 0; i < N; i++)
+        free(d[i]);
+    free(d);
 
     if (DEBUG_MSG)
     {
@@ -59,18 +69,13 @@ int algoritmoSecuencial(datos in)
             {
                 for (int j = 0; j < N - 1; j++)
                 {
-                    printf("%4lf, ", in.d[i][j]);
+                    printf("%4lf, ", d[i][j]);
                 }
-                printf("%4lf\n", in.d[i][N - 1]);
+                printf("%4lf\n", d[i][N - 1]);
             }
         }
-        printf("\n");
-        printf("Resultado del algoritmo secuencial con cambio de operaciones: f = %4lf\n", in.f);
+        printf("Resultado del algoritmo secuencial con cambio de operaciones: f = %4lf\n", f);
     }
-
-    // accesos = (9*8*N*N) + (N*5*2)    // Inicializamos el contador
-    int accesos = N * (72 * N + 10);
-    return accesos;
 }
 
 void leerParametros(int argc, const char *argv[])
