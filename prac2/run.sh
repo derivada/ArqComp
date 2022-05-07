@@ -81,14 +81,22 @@ while [ $count -lt $MAX_TESTS ]; do
     for N in ${valoresN[@]}; do  
         # get random seed
         SEED=$(($RANDOM))
-        ./algSecuencial_O0.o $N $SEED salida.txt
-        ./algSecuencialOptOperaciones_O0.o $N $SEED salida.txt
-        ./algSecuencialOptimizadoOrden_O0.o $N $SEED salida.txt   
-        ./algSecuencialOptimizadoUnrollingv1_O0.o $N $SEED salida.txt
-        ./algSecuencialOptimizadoUnrollingv2_O0.o $N $SEED salida.txt
-        ./algSecuencialOptimizadoTiling_O0.o 64 64 $N $SEED salida.txt
-        ./algAVX2_O0.o $N $SEED salida.txt
-        ./algOMP_O0.o 4 $N $SEED salida.txt
+        ./algSecuencial_O2.o $N $SEED salida.txt
+        #./algSecuencialOptOperaciones_O0.o $N $SEED salida.txt   
+        #./algSecuencialOptimizadoOrden_O0.o $N $SEED salida.txt   
+        #./algSecuencialOptimizadoUnrollingv1_O0.o $N $SEED salida.txt
+        #./algSecuencialOptimizadoUnrollingv2_O0.o $N $SEED salida.txt
+        #./algSecuencialOptimizadoTiling_O0.o 4 4 $N $SEED salida.txt
+        #./algSecuencialOptimizadoTiling_O0.o 16 16 $N $SEED salida.txt
+        #./algSecuencialOptimizadoTiling_O0.o 64 64 $N $SEED salida.txt
+        #./algSecuencialOptimizadoTiling_O0.o 128 128 $N $SEED salida.txt
+        #./algSecuencialOptimizadoTiling_O0.o 512 512 $N $SEED salida.txt
+        ./algAVX2_O2.o $N $SEED salida.txt
+        ./algOMP_O2.o 1 $N $SEED salida.txt
+        ./algOMP_O2.o 2 $N $SEED salida.txt
+        ./algOMP_O2.o 4 $N $SEED salida.txt
+        ./algOMP_O2.o 8 $N $SEED salida.txt
+        ./algOMP_O2.o 16 $N $SEED salida.txt
     done
     (( count++ ))
     echo "Tests done ($count / $MAX_TESTS)"

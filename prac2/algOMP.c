@@ -33,8 +33,12 @@ int main(int argc, const char *argv[])
     results = medirTiempoEjecucion(algoritmoOMP, *casoPrueba);
 
     // Registramos los resultados
-    fprintf(outputFile, "%d,%s (%d threads) (%s),%d,%lf\n",
-            N, ALG_NAME, numThreads, optimizationFlag, results.ciclos, results.microsegundos);
+    if (numThreads == 1)
+        fprintf(outputFile, "%d,%s (1 thread) (%s),%d,%lf\n",
+                N, ALG_NAME, optimizationFlag, results.ciclos, results.microsegundos);
+    else
+        fprintf(outputFile, "%d,%s (%d threads) (%s),%d,%lf\n",
+                N, ALG_NAME, numThreads, optimizationFlag, results.ciclos, results.microsegundos);
 
     // Liberación de mi negro jerónimo
     liberarMemoria(*casoPrueba, N);
@@ -47,7 +51,7 @@ void algoritmoOMP(datos in)
     double *e = (double *)malloc(sizeof(double) * N);
     double f = 0;
     int i = 0, j = 0;
-#pragma omp parallel for shared(d) private(i, j) num_threads(4)
+#pragma omp parallel for shared(d) private(i, j)
     for (i = 0; i < N; i++)
     {
         d[i] = (double *)malloc(sizeof(double) * N);
@@ -154,7 +158,7 @@ void algoritmoOMP(datos in)
             d[i][j49] = 2 * in.a[i][0] * (in.b[0][j49] - in.c[0]) + 2 * in.a[i][1] * (in.b[1][j49] - in.c[1]) + 2 * in.a[i][2] * (in.b[2][j49] - in.c[2]) + 2 * in.a[i][3] * (in.b[3][j49] - in.c[3]) + 2 * in.a[i][4] * (in.b[4][j49] - in.c[4]) + 2 * in.a[i][5] * (in.b[5][j49] - in.c[5]) + 2 * in.a[i][6] * (in.b[6][j49] - in.c[6]) + 2 * in.a[i][7] * (in.b[7][j49] - in.c[7]);
         }
     }
-#pragma omp parallel for private(j) num_threads(4)
+#pragma omp parallel for private(j)
     for (j = 0; j < N; j += 50)
     {
         e[j] = d[in.ind[j]][in.ind[j]] / 2;

@@ -5,28 +5,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # wd = carpeta conte
 # Preparar datos
 datos = read.table("salida.txt", header = TRUE, sep = ",")
 # Mediana de todas las observaciones
-datosTiempo <- aggregate( t_us ~ N + alg, data = datos, median)
-
-# Grafica de tamaño-ciclos totales para cada algoritmo
-plotTiempo = ggplot(data = datosTiempo, mapping = aes(x = N, y = t_us)) +
-  geom_line(aes(color = alg, group = alg), lwd = 1) +
-  labs(title = "Comparación tamaño - microsegundos",
-       x = "N (Tamaño del problema)",
-       y = "microsegundos") +
-  theme_bw() +
-  theme(legend.title = element_text(size = 15),
-        legend.text = element_text(size=15),
-        legend.key.size = unit(1, 'cm'),
-        axis.title.x = element_text(size = 20),
-        axis.title.y = element_text(size = 20),
-        axis.text.x = element_text(size = 30),
-        axis.text.y = element_text(size = 30),
-        title = element_text(size = 25))
-
-ggsave("graficaTiempo.png", plotTiempo, width = 15, height = 10)
-
 datosCiclos <- aggregate( ck ~ N + alg, data = datos, median)
-
 # Grafica de tamaño-ciclos totales para cada algoritmo
 plotCiclos = ggplot(data = datosCiclos, mapping = aes(x = N, y = ck)) +
   geom_line(aes(color = alg, group = alg), lwd = 1) +
@@ -45,13 +24,13 @@ plotCiclos = ggplot(data = datosCiclos, mapping = aes(x = N, y = ck)) +
 
 ggsave("graficaCiclos.png", plotCiclos, width = 15, height = 10)
 
-datosSpeedup = datosTiempo
+datosSpeedup = datosCiclos
 algBase = "Sec (O2)"
 tiemposAlgBase = datosSpeedup[datosSpeedup$alg == algBase, ]
-datosSpeedup$t_us = apply(datosSpeedup, 1, function(x) {
-  x[3] = tiemposAlgBase$t_us[tiemposAlgBase$N == as.numeric(trimws(x[1], "both"))] / as.numeric(x[3])
+datosSpeedup$ck = apply(datosSpeedup, 1, function(x) {
+  x[3] = tiemposAlgBase$ck[tiemposAlgBase$N == as.numeric(trimws(x[1], "both"))] / as.numeric(x[3])
 })
-colnames(datosSpeedup)[which(names(datosSpeedup) == "t_us")] <- "speedup"                              
+colnames(datosSpeedup)[which(names(datosSpeedup) == "ck")] <- "speedup"                              
 plotSpeedup = ggplot(data = datosSpeedup, mapping = aes(x = N, y = speedup)) +
   geom_line(aes(color = alg, group = alg), lwd = 1) +
   labs(title = "Speedup respecto al algoritmo secuencial",
@@ -69,9 +48,26 @@ plotSpeedup = ggplot(data = datosSpeedup, mapping = aes(x = N, y = speedup)) +
   
 
 ggsave("graficaSpeedup.png", plotSpeedup, width = 15, height = 10)
+plotCiclos
 plotSpeedup
+tiemposOMP = datosSpeedup[substring(datosSpeedup$alg, 1, 3 ) == "OMP",]
+tiemposOMP = tiemposOMP[tiemposOMP$N == 3000, ]
+tiemposOMP$nThreads = as.numeric(substring(tiemposOMP$alg, 6,7))
+plotThreads = ggplot(tiemposOMP,aes(x = nThreads, y = speedup), group = 1) +
+  geom_line()+
+  geom_point() +
+  labs(title = "Speedup para N = 3000 para diferente número de hilos",
+       x = "nThreads (Número de hilos usados)",
+       y = "Veces más rápido respecto a sec.") +
+  theme_bw() +
+  theme(legend.title = element_text(size = 15),
+        legend.text = element_text(size=15),
+        legend.key.size = unit(1, 'cm'),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        axis.text.x = element_text(size = 30),
+        axis.text.y = element_text(size = 30),
+        title = element_text(size = 25))
+ggsave("graficaThreads.png", plotThreads, width = 15, height = 10)
+plotThreads
 
-# Mostrar gráficas
-#plotTiempo
-#plotCiclos
-#plotSpeedup
