@@ -4,7 +4,7 @@
 #include <time.h>
 #include "utils.h"
 
-#define ALG_NAME "OptUnroll_V4"
+#define ALG_NAME "OptUnroll_V2"
 FILE *outputFile;
 
 // Funciones de leer parámetros y cerrar archivo de salida

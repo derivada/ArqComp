@@ -66,6 +66,7 @@ void algSecOptUnroll1(datos in)
         }
     }
     int i = 0;
+    // Ahora realizamos un unrolling de este otro bucle de factor 4
     for (; i < N-(N%4); i += 4)
     {
         e[i] = d[in.ind[i]][in.ind[i]] / 2;
